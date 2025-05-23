@@ -2,6 +2,7 @@
   "name": "vue-select-avatar",
   "version": "0.0.0",
   "description": "基于 vue 选择头像",
+  "license": "MIT",
   "keywords": [
     "vue",
     "vue3",
@@ -22,10 +23,11 @@
   "bugs": {
     "url": "https://github.com/xiangheng08/vue-select-avatar/issues"
   },
-  "license": "MIT",
   "type": "module",
+  "types": "./lib/main.ts",
   "files": [
-    "dist"
+    "dist",
+    "lib"
   ],
   "main": "./dist/lib.umd.cjs",
   "module": "./dist/lib.js",
