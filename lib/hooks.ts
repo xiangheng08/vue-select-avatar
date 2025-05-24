@@ -1,4 +1,5 @@
-import { watchEffect, reactive, type CSSProperties } from 'vue'
+import { watchEffect, reactive } from 'vue'
+import type { CSSProperties } from 'vue'
 import type { Position } from './types'
 
 export const useStyles = (pos: Position) => {

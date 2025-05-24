@@ -13,7 +13,7 @@ export default defineConfig({
     lib: {
       entry: resolve(__dirname, 'lib/main.ts'),
       name: 'lib',
-      fileName: 'lib',
+      fileName: (format) => `${format}.js`,
     },
     rollupOptions: {
       external: ['vue'],
