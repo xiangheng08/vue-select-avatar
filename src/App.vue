@@ -1,11 +1,7 @@
 <script setup lang="ts">
-import { Viewport } from '../lib/main'
+import Test1 from './components/Test1.vue'
 </script>
 
 <template>
-  <div class="">
-    <Viewport />
-  </div>
+  <Test1 />
 </template>
-
-<style scoped></style>
