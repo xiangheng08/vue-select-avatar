@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { Viewport, type ImageSelectOptions } from '../../lib/main'
+import { Viewport, type ImageSelectOptions } from '../../lib'
 
 const viewportRef = ref<InstanceType<typeof Viewport>>()
 const selectOptions: ImageSelectOptions = {

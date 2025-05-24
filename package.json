@@ -24,17 +24,16 @@
     "url": "https://github.com/xiangheng08/vue-select-avatar/issues"
   },
   "type": "module",
-  "types": "./lib/main.ts",
+  "types": "./dist/index.d.ts",
   "files": [
-    "dist",
-    "lib"
+    "dist"
   ],
-  "main": "./dist/lib.umd.cjs",
-  "module": "./dist/lib.js",
+  "main": "./dist/umd.cjs",
+  "module": "./dist/es.js",
   "exports": {
     ".": {
-      "import": "./dist/lib.js",
-      "require": "./dist/lib.umd.cjs"
+      "import": "./dist/es.js",
+      "require": "./dist/umd.cjs"
     }
   },
   "scripts": {
@@ -43,7 +42,6 @@
     "preview": "vite preview",
     "test:unit": "vitest",
     "build-only": "vite build",
-    "build-types": "vue-tsc -p ./lib/tsconfig.json --outDir ./dist --declaration --emitDeclarationOnly",
     "type-check": "vue-tsc --build",
     "lint": "eslint . --fix",
     "format": "prettier --write src/"
@@ -70,6 +68,7 @@
     "sass": "^1.89.0",
     "typescript": "~5.8.0",
     "vite": "^6.2.4",
+    "vite-plugin-dts": "^4.5.4",
     "vite-plugin-vue-devtools": "^7.7.2",
     "vitest": "^3.1.1",
     "vue-tsc": "^2.2.8"

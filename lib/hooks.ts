@@ -2,7 +2,14 @@ import { watchEffect, reactive } from 'vue'
 import type { CSSProperties } from 'vue'
 import type { Position } from './types'
 
-export const useStyles = (pos: Position) => {
+export const useStyles = (
+  pos: Position,
+): {
+  viewportStyle: CSSProperties
+  viewStyle: CSSProperties
+  imageStyle: CSSProperties
+  innerImageStyle: CSSProperties
+} => {
   const viewportStyle = reactive<CSSProperties>({})
   const viewStyle = reactive<CSSProperties>({})
   const imageStyle = reactive<CSSProperties>({})

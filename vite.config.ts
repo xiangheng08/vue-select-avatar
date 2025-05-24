@@ -4,6 +4,7 @@ import { fileURLToPath, URL } from 'node:url'
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import vueDevTools from 'vite-plugin-vue-devtools'
+import dts from 'vite-plugin-dts'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
@@ -11,7 +12,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url))
 export default defineConfig({
   build: {
     lib: {
-      entry: resolve(__dirname, 'lib/main.ts'),
+      entry: resolve(__dirname, 'lib/index.ts'),
       name: 'lib',
       fileName: (format) => `${format}.js`,
     },
@@ -26,7 +27,7 @@ export default defineConfig({
       },
     },
   },
-  plugins: [vue(), vueDevTools()],
+  plugins: [vue(), vueDevTools(), dts({ tsconfigPath: './tsconfig.types.json' })],
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
