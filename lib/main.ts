@@ -1,3 +1,3 @@
-import Viewport from './Viewport1.vue'
+import Viewport from './Viewport.vue'
 
 export { Viewport }
