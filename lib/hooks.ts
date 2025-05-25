@@ -23,10 +23,10 @@ export const useStyles = (
     viewStyle.transform = `translate3d(${pos.viewX}px, ${pos.viewY}px, 0px)`
     imageStyle.width = `${pos.imageWidth}px`
     imageStyle.height = `${pos.imageHeight}px`
-    imageStyle.transform = `scale(${pos.imageScale}) translate3d(${pos.imageX}px, ${pos.imageY}px, 0px)`
+    imageStyle.transform = `translate3d(${pos.imageX}px, ${pos.imageY}px, 0px) scale(${pos.imageScale})`
     innerImageStyle.width = `${pos.imageWidth}px`
     innerImageStyle.height = `${pos.imageHeight}px`
-    innerImageStyle.transform = `scale(${pos.imageScale}) translate3d(${pos.imageX - pos.viewX}px, ${pos.imageY - pos.viewY}px, 0px)`
+    innerImageStyle.transform = `translate3d(${pos.imageX - pos.viewX}px, ${pos.imageY - pos.viewY}px, 0px) scale(${pos.imageScale})`
   })
 
   return { viewportStyle, viewStyle, imageStyle, innerImageStyle }
