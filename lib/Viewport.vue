@@ -1,9 +1,15 @@
 <script setup lang="ts">
 import { computed, onUnmounted, reactive, ref } from 'vue'
 import { useStyles } from './hooks'
-import { selectImage } from './utils'
+import { cropper, selectImage } from './utils'
 import { getDefaultPosition } from './data'
-import type { ImageInfo, ImageSelectOptions, SimplePosition, ViewportProps } from './types'
+import type {
+  CropperOptions,
+  ImageInfo,
+  ImageSelectOptions,
+  SimplePosition,
+  ViewportProps,
+} from './types'
 
 const props = withDefaults(defineProps<ViewportProps>(), {
   size: 300,
@@ -126,6 +132,10 @@ defineExpose({
       pos.imageY = (pos.viewportHeight - res.height * pos.imageScale) / 2
       minImageScale.value = pos.imageScale
     })
+  },
+  async cropper(options?: CropperOptions) {
+    if (!info.value) throw new Error('Please select an image first')
+    return cropper(info.value, pos, options)
   },
 })
 </script>

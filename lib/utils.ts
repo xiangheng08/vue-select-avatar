@@ -1,5 +1,11 @@
 import { accept } from './data'
-import type { ImageSelectOptions, ImageSelectResult } from './types'
+import type {
+  CropperOptions,
+  ImageInfo,
+  ImageSelectOptions,
+  ImageSelectResult,
+  Position,
+} from './types'
 
 export interface SelectFileOptions {
   accept?: string
@@ -160,4 +166,90 @@ export const compressImage = async (
     }
     img.src = URL.createObjectURL(file)
   })
+}
+
+export const loadImage = async (url: string) => {
+  return new Promise<HTMLImageElement>((resolve, reject) => {
+    const img = new Image()
+    img.onload = () => {
+      resolve(img)
+    }
+    img.onerror = () => {
+      reject(new Error('Failed to load image'))
+    }
+    img.src = url
+  })
+}
+
+export const canvasToBlob = (canvas: HTMLCanvasElement, type?: string, quality?: number) => {
+  return new Promise<Blob>((resolve, reject) => {
+    canvas.toBlob(
+      (blob) => {
+        if (blob) {
+          resolve(blob)
+        } else {
+          reject(new Error('Failed to convert canvas to blob'))
+        }
+      },
+      type,
+      quality,
+    )
+  })
+}
+
+const blobToBase64 = (blob: Blob) => {
+  return new Promise<string>((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => {
+      if (typeof reader.result === 'string') {
+        resolve(reader.result)
+      } else {
+        reject(new Error('Failed to convert blob to base64'))
+      }
+    }
+    reader.onerror = (error) => {
+      reject(error)
+    }
+    reader.readAsDataURL(blob)
+  })
+}
+
+export const cropper = async (info: ImageInfo, pos: Position, options?: CropperOptions) => {
+  const { format = 'file', size, type = 'image/png', quality = 1, filename } = options || {}
+
+  let url = info.url
+  let needRevoke = false
+  if (!url) {
+    url = URL.createObjectURL(info.file)
+    needRevoke = true
+  }
+
+  const image = await loadImage(url)
+
+  if (needRevoke) {
+    URL.revokeObjectURL(url)
+  }
+
+  const canvas = document.createElement('canvas')
+  const ctx = canvas.getContext('2d')
+
+  if (!ctx) throw new Error('Canvas context is null')
+
+  const s = size || pos.viewSize / pos.imageScale
+  const x = (pos.viewX - pos.imageX) / pos.imageScale
+  const y = (pos.viewY - pos.imageY) / pos.imageScale
+  const l = pos.viewSize / pos.imageScale
+
+  canvas.width = s
+  canvas.height = s
+
+  ctx.drawImage(image, x, y, l, l, 0, 0, s, s)
+
+  const blob = await canvasToBlob(canvas, type, quality)
+
+  if (format === 'file') {
+    return new File([blob], filename || info.file.name, { type })
+  } else {
+    return blobToBase64(blob)
+  }
 }

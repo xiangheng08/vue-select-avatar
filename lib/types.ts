@@ -87,3 +87,28 @@ export interface ImageSelectResult {
 export interface ImageInfo extends ImageSelectResult {
   url?: string
 }
+
+export type CropperFormat = 'file' | 'base64'
+
+export interface CropperOptions {
+  /**
+   * 数据格式
+   */
+  format?: CropperFormat
+  /**
+   * 输出图片尺寸
+   */
+  size?: number
+  /**
+   * 输出图片类型
+   */
+  type?: 'image/jpeg' | 'image/png' | 'image/webp'
+  /**
+   * 输出图片质量（0-1）
+   */
+  quality?: number
+  /**
+   * 文件名
+   */
+  filename?: string
+}
