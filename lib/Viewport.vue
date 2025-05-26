@@ -15,9 +15,42 @@ const pos = reactive(getDefaultPosition(props))
 const info = ref<ImageInfo>()
 const src = computed(() => info.value?.url)
 const moving = ref(false)
+const backing = ref(false)
 const lastPos: SimplePosition = { x: 0, y: 0 }
+const viewportRef = ref<HTMLElement>()
+const minImageScale = ref(0)
 
 const { viewportStyle, maskStyle, viewStyle, imageStyle, innerImageStyle } = useStyles(pos)
+
+// 检查图片是否需要回正位置
+const checkImageBack = (transition = true) => {
+  if (!info.value) return
+
+  const imageWidth = pos.imageWidth * pos.imageScale
+  const imageHeight = pos.imageHeight * pos.imageScale
+
+  // 修正 x 轴边界
+  let newX = pos.imageX
+  if (newX > pos.viewX) {
+    newX = pos.viewX
+  } else if (newX < pos.viewX + pos.viewSize - imageWidth) {
+    newX = pos.viewX + pos.viewSize - imageWidth
+  }
+
+  // 修正 y 轴边界
+  let newY = pos.imageY
+  if (newY > pos.viewY) {
+    newY = pos.viewY
+  } else if (newY < pos.viewY + pos.viewSize - imageHeight) {
+    newY = pos.viewY + pos.viewSize - imageHeight
+  }
+
+  if (newX !== pos.imageX || newY !== pos.imageY) {
+    pos.imageX = newX
+    pos.imageY = newY
+    backing.value = transition
+  }
+}
 
 const handleMouseDown = (e: MouseEvent) => {
   if (!info.value) return
@@ -44,17 +77,34 @@ const handleMouseUp = () => {
   moving.value = false
   document.removeEventListener('mousemove', handleMouseMove)
   document.removeEventListener('mouseup', handleMouseUp)
+  checkImageBack()
 }
 
 const handleWheel = (e: WheelEvent) => {
   if (!info.value || moving.value) return
   e.preventDefault()
   e.stopPropagation()
-  if (e.deltaY > 0) {
-    pos.imageScale -= props.scaleStep
-  } else {
-    pos.imageScale += props.scaleStep
-  }
+
+  // 获取视口位置和尺寸
+  const viewport = viewportRef.value!
+  const rect = viewport.getBoundingClientRect()
+  const vx = e.clientX - rect.left // 鼠标在视口中的X坐标
+  const vy = e.clientY - rect.top // 鼠标在视口中的Y坐标
+
+  const oldScale = pos.imageScale
+  const delta = e.deltaY > 0 ? -props.scaleStep : props.scaleStep
+  const newScale = Math.max(minImageScale.value, oldScale + delta) // 避免缩放过小
+
+  // 以鼠标为中心缩放
+  pos.imageX = vx - (vx - pos.imageX) * (newScale / oldScale)
+  pos.imageY = vy - (vy - pos.imageY) * (newScale / oldScale)
+
+  pos.imageScale = newScale
+  checkImageBack(false)
+}
+
+const handleTransitionEnd = () => {
+  backing.value = false
 }
 
 onUnmounted(() => {
@@ -74,14 +124,22 @@ defineExpose({
       pos.imageScale = Math.max(pos.viewSize / res.width, pos.viewSize / res.height)
       pos.imageX = (pos.viewportWidth - res.width * pos.imageScale) / 2
       pos.imageY = (pos.viewportHeight - res.height * pos.imageScale) / 2
+      minImageScale.value = pos.imageScale
     })
   },
 })
 </script>
 
 <template>
-  <div class="viewport" :style="viewportStyle" :class="{ grid, moving }">
-    <img class="image" :src="src" alt="image" :style="imageStyle" v-if="src" />
+  <div class="viewport" :style="viewportStyle" :class="{ grid, moving, backing }" ref="viewportRef">
+    <img
+      class="image"
+      :src="src"
+      alt="image"
+      :style="imageStyle"
+      v-if="src"
+      @transitionend="handleTransitionEnd"
+    />
     <div class="mask" :style="maskStyle"></div>
     <div class="view" :style="viewStyle">
       <img class="inner-image" :src="src" alt="inner-image" :style="innerImageStyle" v-if="src" />
@@ -102,9 +160,19 @@ defineExpose({
     padding: 0;
     box-sizing: border-box;
   }
+  &.moving {
+    cursor: grabbing;
+  }
   &.grid {
     background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQAQMAAAAlPW0iAAAAA3NCSVQICAjb4U/gAAAABlBMVEXMzMz////TjRV2AAAACXBIWXMAAArrAAAK6wGCiw1aAAAAHHRFWHRTb2Z0d2FyZQBBZG9iZSBGaXJld29ya3MgQ1M26LyyjAAAABFJREFUCJlj+M/AgBVhF/0PAH6/D/HkDxOGAAAAAElFTkSuQmCC');
   }
+  &.backing {
+    .image,
+    .inner-image {
+      transition: transform 0.2s ease;
+    }
+  }
+
   .image {
     position: absolute;
     left: 0;
