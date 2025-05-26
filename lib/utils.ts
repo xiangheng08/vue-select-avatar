@@ -253,3 +253,8 @@ export const cropper = async (info: ImageInfo, pos: Position, options?: CropperO
     return blobToBase64(blob)
   }
 }
+
+export const getIsClipPathSupported = () => {
+  const element = document.createElement('div')
+  return 'clipPath' in element.style
+}

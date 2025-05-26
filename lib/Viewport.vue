@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { computed, onUnmounted, reactive, ref } from 'vue'
 import { useStyles } from './hooks'
-import { cropper, selectImage } from './utils'
 import { getDefaultPosition } from './data'
+import { computed, onUnmounted, reactive, ref } from 'vue'
+import { cropper, getIsClipPathSupported, selectImage } from './utils'
 import type {
   CropperOptions,
   ImageInfo,
@@ -25,6 +25,7 @@ const backing = ref(false)
 const lastPos: SimplePosition = { x: 0, y: 0 }
 const viewportRef = ref<HTMLElement>()
 const minImageScale = ref(0)
+const isClipPathSupported = ref(getIsClipPathSupported())
 
 const { viewportStyle, maskStyle, viewStyle, imageStyle, innerImageStyle } = useStyles(pos)
 
@@ -141,7 +142,14 @@ defineExpose({
 </script>
 
 <template>
-  <div class="viewport" :style="viewportStyle" :class="{ grid, moving, backing }" ref="viewportRef">
+  <div
+    class="viewport"
+    :style="viewportStyle"
+    :class="{ grid, moving, backing }"
+    ref="viewportRef"
+    @mousedown="handleMouseDown"
+    @wheel="handleWheel"
+  >
     <img
       class="image"
       :src="src"
@@ -152,9 +160,15 @@ defineExpose({
     />
     <div class="mask" :style="maskStyle"></div>
     <div class="view" :style="viewStyle">
-      <img class="inner-image" :src="src" alt="inner-image" :style="innerImageStyle" v-if="src" />
+      <!-- 如果支持 clip-path 属性，则不渲染 inner-image，已减少性能消耗 -->
+      <img
+        class="inner-image"
+        :src="src"
+        alt="inner-image"
+        :style="innerImageStyle"
+        v-if="src && !isClipPathSupported"
+      />
     </div>
-    <div class="event-layer" @mousedown="handleMouseDown" @wheel="handleWheel"></div>
   </div>
 </template>
 
@@ -182,7 +196,6 @@ defineExpose({
       transition: transform 0.2s ease;
     }
   }
-
   .image {
     position: absolute;
     left: 0;
@@ -198,6 +211,7 @@ defineExpose({
     width: 100%;
     height: 100%;
     background-color: rgba(0, 0, 0, 0.3);
+    pointer-events: none;
   }
   .view {
     position: absolute;
@@ -213,13 +227,6 @@ defineExpose({
     transform-origin: left top;
     pointer-events: none;
     user-select: none;
-  }
-  .event-layer {
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
   }
 }
 </style>
