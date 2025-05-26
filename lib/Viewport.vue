@@ -33,6 +33,10 @@ const ctrlStep = ref(0)
 const shiftStep = ref(0)
 const pressCtrl = usePressKey('Control')
 const pressShift = usePressKey('Shift')
+const touchStart = ref<SimplePosition>()
+const touchStartDistance = ref<number>()
+const isTwoFingerZoom = ref(false)
+const touchCenter = ref<SimplePosition>({ x: 0, y: 0 })
 
 const { viewportStyle, maskStyle, viewStyle, imageStyle, innerImageStyle } = useStyles(pos)
 
@@ -131,6 +135,102 @@ const handleTransitionEnd = () => {
   backing.value = false
 }
 
+const handleTouchStart = (e: TouchEvent) => {
+  e.preventDefault()
+  e.stopPropagation()
+
+  if (e.touches.length === 1) {
+    // 单指开始
+    const touch = e.touches[0]
+    touchStart.value = { x: touch.clientX, y: touch.clientY }
+    isTwoFingerZoom.value = false
+  } else if (e.touches.length >= 2) {
+    // 双指开始
+    isTwoFingerZoom.value = true
+    touchCenter.value = {
+      x: (e.touches[0].clientX + e.touches[1].clientX) / 2,
+      y: (e.touches[0].clientY + e.touches[1].clientY) / 2,
+    }
+    touchStartDistance.value = Math.hypot(
+      e.touches[0].clientX - e.touches[1].clientX,
+      e.touches[0].clientY - e.touches[1].clientY,
+    )
+  }
+
+  moving.value = true
+}
+
+const handleTouchMove = (e: TouchEvent) => {
+  e.preventDefault()
+  e.stopPropagation()
+
+  if (!info.value) return
+
+  if (e.touches.length === 1 && !isTwoFingerZoom.value) {
+    // 单指移动
+    const touch = e.touches[0]
+    if (touchStart.value) {
+      const dx = touch.clientX - touchStart.value.x
+      const dy = touch.clientY - touchStart.value.y
+      pos.imageX += dx
+      pos.imageY += dy
+      touchStart.value = { x: touch.clientX, y: touch.clientY }
+    }
+  } else if (e.touches.length >= 2) {
+    // 双指操作：同时缩放和平移
+    const currentDistance = Math.hypot(
+      e.touches[0].clientX - e.touches[1].clientX,
+      e.touches[0].clientY - e.touches[1].clientY,
+    )
+
+    // 计算当前双指中心点
+    const currentCenter = {
+      x: (e.touches[0].clientX + e.touches[1].clientX) / 2,
+      y: (e.touches[0].clientY + e.touches[1].clientY) / 2,
+    }
+
+    // 计算中心点偏移量
+    const dx = currentCenter.x - touchCenter.value.x
+    const dy = currentCenter.y - touchCenter.value.y
+
+    // 更新图片位置
+    pos.imageX += dx
+    pos.imageY += dy
+
+    // 更新 touchCenter 供下一次计算使用
+    touchCenter.value = currentCenter
+
+    // 缩放逻辑
+    if (touchStartDistance.value) {
+      const scaleRatio = currentDistance / touchStartDistance.value
+      const newScale = Math.max(minImageScale.value, pos.imageScale * scaleRatio)
+
+      // 计算视口位置
+      const viewport = viewportRef.value!
+      const rect = viewport.getBoundingClientRect()
+      const vx = touchCenter.value.x - rect.left
+      const vy = touchCenter.value.y - rect.top
+
+      // 以双指中心缩放
+      pos.imageX = vx - (vx - pos.imageX) * (newScale / pos.imageScale)
+      pos.imageY = vy - (vy - pos.imageY) * (newScale / pos.imageScale)
+      pos.imageScale = newScale
+
+      // 更新 touchStartDistance 供下一次缩放使用
+      touchStartDistance.value = currentDistance
+    }
+  }
+}
+
+const handleTouchEnd = (e: TouchEvent) => {
+  if (e.touches.length > 0) return
+  touchStart.value = void 0
+  touchStartDistance.value = void 0
+  isTwoFingerZoom.value = false
+  moving.value = false
+  checkImageBack()
+}
+
 onUnmounted(() => {
   if (info.value?.url) {
     URL.revokeObjectURL(info.value.url)
@@ -138,21 +238,21 @@ onUnmounted(() => {
 })
 
 defineExpose({
-  select(options?: ImageSelectOptions) {
-    selectImage(options).then((res) => {
-      info.value = res
-      info.value.url = URL.createObjectURL(res.file)
+  async select(options?: ImageSelectOptions) {
+    const res = await selectImage(options)
 
-      pos.imageWidth = res.width
-      pos.imageHeight = res.height
-      pos.imageScale = Math.max(pos.viewSize / res.width, pos.viewSize / res.height)
-      pos.imageX = (pos.viewportWidth - res.width * pos.imageScale) / 2
-      pos.imageY = (pos.viewportHeight - res.height * pos.imageScale) / 2
-      minImageScale.value = pos.imageScale
-      step.value = minImageScale.value * (props.scaleStep / pos.viewSize)
-      ctrlStep.value = minImageScale.value * (props.ctrlScaleStep / pos.viewSize)
-      shiftStep.value = minImageScale.value * (props.shiftScaleStep / pos.viewSize)
-    })
+    info.value = res
+    info.value.url = URL.createObjectURL(res.file)
+
+    pos.imageWidth = res.width
+    pos.imageHeight = res.height
+    pos.imageScale = Math.max(pos.viewSize / res.width, pos.viewSize / res.height)
+    pos.imageX = (pos.viewportWidth - res.width * pos.imageScale) / 2
+    pos.imageY = (pos.viewportHeight - res.height * pos.imageScale) / 2
+    minImageScale.value = pos.imageScale
+    step.value = minImageScale.value * (props.scaleStep / pos.viewSize)
+    ctrlStep.value = minImageScale.value * (props.ctrlScaleStep / pos.viewSize)
+    shiftStep.value = minImageScale.value * (props.shiftScaleStep / pos.viewSize)
   },
   async cropper(options?: CropperOptions) {
     if (!info.value) throw new Error('Please select an image first')
@@ -169,6 +269,9 @@ defineExpose({
     ref="viewportRef"
     @mousedown="handleMouseDown"
     @wheel="handleWheel"
+    @touchstart="handleTouchStart"
+    @touchmove="handleTouchMove"
+    @touchend="handleTouchEnd"
   >
     <img
       class="image"

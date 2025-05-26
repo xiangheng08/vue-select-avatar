@@ -27,6 +27,9 @@ export default defineConfig({
       },
     },
   },
+  server: {
+    host: '0.0.0.0',
+  },
   plugins: [vue(), vueDevTools(), dts({ tsconfigPath: './tsconfig.types.json' })],
   resolve: {
     alias: {
