@@ -14,17 +14,29 @@ export interface Position {
   imageScale: number
 }
 
+export interface SimplePosition {
+  x: number
+  y: number
+}
+
 export interface ViewportProps {
   size?: number
   width?: number
   height?: number
   viewSize?: number
+  /**
+   * 是否为网格背景
+   */
+  grid?: boolean
+  /**
+   * 缩放步长
+   */
+  scaleStep?: number
 }
 
 export interface ImageSelectOptions {
   /**
    * 允许的文件类型（参考input的accept属性）
-   * @default accept常量导出的值
    */
   accept?: string
 
@@ -64,4 +76,14 @@ export interface ImageSelectOptions {
    * @default 0.8
    */
   quality?: number
+}
+
+export interface ImageSelectResult {
+  file: File
+  width: number
+  height: number
+}
+
+export interface ImageInfo extends ImageSelectResult {
+  url?: string
 }

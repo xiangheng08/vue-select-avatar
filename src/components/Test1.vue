@@ -11,6 +11,6 @@ const selectOptions: ImageSelectOptions = {
 </script>
 
 <template>
-  <Viewport ref="viewportRef" />
+  <Viewport ref="viewportRef" grid />
   <button @click="viewportRef?.select(selectOptions)">选择图片</button>
 </template>

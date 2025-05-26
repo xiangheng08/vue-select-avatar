@@ -1,5 +1,5 @@
 import { accept } from './data'
-import type { ImageSelectOptions } from './types'
+import type { ImageSelectOptions, ImageSelectResult } from './types'
 
 export interface SelectFileOptions {
   accept?: string
@@ -39,13 +39,7 @@ export const selectFile = (options?: SelectFileOptions): Promise<File[]> => {
  * @param options 图片选择配置选项
  * @returns 验证通过的File对象数组
  */
-export const selectImage = async (
-  options?: ImageSelectOptions,
-): Promise<{
-  file: File
-  width: number
-  height: number
-}> => {
+export const selectImage = async (options?: ImageSelectOptions): Promise<ImageSelectResult> => {
   const {
     accept: acceptType = accept,
     maxFileSize = 2 * 1024 * 1024,
