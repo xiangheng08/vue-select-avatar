@@ -32,6 +32,14 @@ export interface ViewportProps {
    * 缩放步长
    */
   scaleStep?: number
+  /**
+   * 缩放步长（按下Ctrl键时）
+   */
+  ctrlScaleStep?: number
+  /**
+   * 缩放步长（按下Shift键时）
+   */
+  shiftScaleStep?: number
 }
 
 export interface ImageSelectOptions {

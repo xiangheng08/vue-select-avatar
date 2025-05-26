@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useStyles } from './hooks'
+import { usePressKey, useStyles } from './hooks'
 import { getDefaultPosition } from './data'
 import { computed, onUnmounted, reactive, ref } from 'vue'
 import { cropper, getIsClipPathSupported, selectImage } from './utils'
@@ -14,7 +14,9 @@ import type {
 const props = withDefaults(defineProps<ViewportProps>(), {
   size: 300,
   viewSize: 180,
-  scaleStep: 0.05,
+  scaleStep: 10,
+  ctrlScaleStep: 5,
+  shiftScaleStep: 1,
 })
 
 const pos = reactive(getDefaultPosition(props))
@@ -26,6 +28,11 @@ const lastPos: SimplePosition = { x: 0, y: 0 }
 const viewportRef = ref<HTMLElement>()
 const minImageScale = ref(0)
 const isClipPathSupported = ref(getIsClipPathSupported())
+const step = ref(0)
+const ctrlStep = ref(0)
+const shiftStep = ref(0)
+const pressCtrl = usePressKey('Control')
+const pressShift = usePressKey('Shift')
 
 const { viewportStyle, maskStyle, viewStyle, imageStyle, innerImageStyle } = useStyles(pos)
 
@@ -56,6 +63,16 @@ const checkImageBack = (transition = true) => {
     pos.imageX = newX
     pos.imageY = newY
     backing.value = transition
+  }
+}
+
+const getStep = () => {
+  if (pressShift.value) {
+    return shiftStep.value
+  } else if (pressCtrl.value) {
+    return ctrlStep.value
+  } else {
+    return step.value
   }
 }
 
@@ -99,7 +116,7 @@ const handleWheel = (e: WheelEvent) => {
   const vy = e.clientY - rect.top // 鼠标在视口中的Y坐标
 
   const oldScale = pos.imageScale
-  const delta = e.deltaY > 0 ? -props.scaleStep : props.scaleStep
+  const delta = e.deltaY > 0 ? -getStep() : getStep()
   const newScale = Math.max(minImageScale.value, oldScale + delta) // 避免缩放过小
 
   // 以鼠标为中心缩放
@@ -132,6 +149,9 @@ defineExpose({
       pos.imageX = (pos.viewportWidth - res.width * pos.imageScale) / 2
       pos.imageY = (pos.viewportHeight - res.height * pos.imageScale) / 2
       minImageScale.value = pos.imageScale
+      step.value = minImageScale.value * (props.scaleStep / pos.viewSize)
+      ctrlStep.value = minImageScale.value * (props.ctrlScaleStep / pos.viewSize)
+      shiftStep.value = minImageScale.value * (props.shiftScaleStep / pos.viewSize)
     })
   },
   async cropper(options?: CropperOptions) {

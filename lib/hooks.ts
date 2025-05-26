@@ -1,6 +1,6 @@
-import { watchEffect, reactive } from 'vue'
-import type { CSSProperties } from 'vue'
+import { watchEffect, reactive, ref, onMounted, onUnmounted } from 'vue'
 import type { Position } from './types'
+import type { CSSProperties } from 'vue'
 
 export const useStyles = (
   pos: Position,
@@ -37,4 +37,27 @@ export const useStyles = (
   })
 
   return { viewportStyle, maskStyle, viewStyle, imageStyle, innerImageStyle }
+}
+
+export const usePressKey = (key: string) => {
+  const press = ref(false)
+  const handleKeydown = (e: KeyboardEvent) => {
+    if (e.key === key) {
+      press.value = true
+    }
+  }
+  const handleKeyup = (e: KeyboardEvent) => {
+    if (e.key === key) {
+      press.value = false
+    }
+  }
+  onMounted(() => {
+    window.addEventListener('keydown', handleKeydown)
+    window.addEventListener('keyup', handleKeyup)
+  })
+  onUnmounted(() => {
+    window.removeEventListener('keydown', handleKeydown)
+    window.removeEventListener('keyup', handleKeyup)
+  })
+  return press
 }
