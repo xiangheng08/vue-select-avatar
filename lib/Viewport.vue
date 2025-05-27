@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { usePressKey, useStyles } from './hooks'
 import { getDefaultPosition } from './data'
-import { computed, onUnmounted, reactive, ref } from 'vue'
+import { usePressKey, useStyles } from './hooks'
+import { computed, onUnmounted, reactive, ref, watch } from 'vue'
 import { cropper, getIsClipPathSupported, selectImage } from './utils'
 import type {
   CropperOptions,
@@ -231,6 +231,13 @@ const handleTouchEnd = (e: TouchEvent) => {
   checkImageBack()
 }
 
+watch(moving, (val) => {
+  if (val) {
+    // 开始移动时，停止回弹
+    backing.value = false
+  }
+})
+
 onUnmounted(() => {
   if (info.value?.url) {
     URL.revokeObjectURL(info.value.url)
@@ -316,7 +323,7 @@ defineExpose({
   &.backing {
     .image,
     .inner-image {
-      transition: transform 0.2s ease;
+      transition: transform 0.3s ease;
     }
   }
   .image {
