@@ -23,6 +23,9 @@ export interface ViewportProps {
   size?: number
   width?: number
   height?: number
+  /**
+   * 观察窗口大小
+   */
   viewSize?: number
   /**
    * 是否为网格背景
@@ -40,6 +43,10 @@ export interface ViewportProps {
    * 缩放步长（按下Shift键时）
    */
   shiftScaleStep?: number
+  /**
+   * 滚轮反向
+   */
+  wheelReverse?: boolean
 }
 
 export interface ImageSelectOptions {
