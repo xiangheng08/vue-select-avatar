@@ -188,7 +188,7 @@ const handleTouchStart = (e: TouchEvent) => {
 
   moving.value = true
 
-  document.addEventListener('touchmove', handleTouchMove)
+  document.addEventListener('touchmove', handleTouchMove, { passive: false })
   document.addEventListener('touchend', handleTouchEnd)
   document.addEventListener('touchcancel', handleTouchEnd)
 }
