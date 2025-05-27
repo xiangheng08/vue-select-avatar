@@ -47,6 +47,10 @@ export interface ViewportProps {
    * 滚轮反向
    */
   wheelReverse?: boolean
+  /**
+   * 图片固定模式：true=固定图片移动视窗，false=固定视窗移动图片（默认）
+   */
+  fixedImage?: boolean
 }
 
 export interface ImageSelectOptions {

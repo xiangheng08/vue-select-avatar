@@ -27,7 +27,7 @@ const handleCropper = async () => {
 </script>
 
 <template>
-  <Viewport ref="viewportRef" grid />
+  <Viewport ref="viewportRef" grid fixed-image />
   <button @click="viewportRef?.select(selectOptions)">选择图片</button>
   <button @click="handleCropper">截取</button>
   <img :src="src" alt="" />

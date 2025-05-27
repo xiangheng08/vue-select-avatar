@@ -1,6 +1,7 @@
 import { watchEffect, reactive, ref, onMounted, onUnmounted, watch } from 'vue'
 import type { CSSProperties, Reactive, Ref } from 'vue'
-import type { ImageInfo, Position, SimplePosition } from './types'
+import type { ImageInfo, ImageSelectResult, Position, SimplePosition, ViewportProps } from './types'
+import { calculateDistance } from './utils'
 
 export const useStyles = (
   pos: Position,
@@ -18,13 +19,9 @@ export const useStyles = (
   const innerImageStyle = reactive<CSSProperties>({})
 
   watchEffect(() => {
-    const pX = (pos.viewportWidth - pos.viewSize) / 2
-    const pY = (pos.viewportHeight - pos.viewSize) / 2
-    const p2X = pos.viewportWidth - pX
-    const p2Y = pos.viewportHeight - pY
     viewportStyle.width = `${pos.viewportWidth}px`
     viewportStyle.height = `${pos.viewportHeight}px`
-    maskStyle.clipPath = `polygon(0% 0%, 0% 100%, ${pX}px 100%, ${pX}px ${pY}px, ${p2X}px ${pY}px, ${p2X}px ${p2Y}px, ${pX}px ${p2Y}px, ${pX}px 100%, 100% 100%, 100% 0%)`
+    maskStyle.clipPath = `polygon(0% 0%, 0% 100%, ${pos.viewX}px 100%, ${pos.viewX}px ${pos.viewY}px, ${pos.viewX + pos.viewSize}px ${pos.viewY}px, ${pos.viewX + pos.viewSize}px ${pos.viewY + pos.viewSize}px, ${pos.viewX}px ${pos.viewY + pos.viewSize}px, ${pos.viewX}px 100%, 100% 100%, 100% 0%)`
     viewStyle.width = `${pos.viewSize}px`
     viewStyle.height = `${pos.viewSize}px`
     viewStyle.transform = `translate3d(${pos.viewX}px, ${pos.viewY}px, 0px)`
@@ -67,17 +64,23 @@ interface MouseHandlesOptions {
   checkImageBack: (transition?: boolean) => void
   info: Ref<ImageInfo | undefined>
   pos: Reactive<Position>
+  props: Reactive<ViewportProps>
 }
 
+type PointPosition = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right'
+
 export const useMouseHandles = (options: MouseHandlesOptions) => {
-  const { moving, checkImageBack, info, pos } = options
+  const { moving, checkImageBack, info, pos, props } = options
 
   const lastPos = ref<SimplePosition>({ x: 0, y: 0 })
+  let pointPosition: PointPosition | undefined
 
   const handleMouseDown = (e: MouseEvent) => {
-    if (!info.value) return
+    if (!info.value || props.fixedImage) return
+
     e.preventDefault()
     e.stopPropagation()
+
     lastPos.value.x = e.clientX
     lastPos.value.y = e.clientY
     moving.value = true
@@ -86,9 +89,9 @@ export const useMouseHandles = (options: MouseHandlesOptions) => {
   }
 
   const handleMouseMove = (e: MouseEvent) => {
-    if (!moving.value) return
     e.preventDefault()
     e.stopPropagation()
+
     pos.imageX += e.clientX - lastPos.value.x
     pos.imageY += e.clientY - lastPos.value.y
     lastPos.value.x = e.clientX
@@ -102,7 +105,44 @@ export const useMouseHandles = (options: MouseHandlesOptions) => {
     checkImageBack()
   }
 
-  return { handleMouseDown }
+  const handlePointMouseDown = (e: MouseEvent, position: PointPosition) => {
+    e.preventDefault()
+    e.stopPropagation()
+
+    pointPosition = position
+    lastPos.value.x = e.clientX
+    lastPos.value.y = e.clientY
+    document.addEventListener('mousemove', handlePointMouseMove)
+    document.addEventListener('mouseup', handlePointMouseUp)
+  }
+
+  const handlePointMouseMove = (e: MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+
+    const newPos = { x: e.clientX, y: e.clientY }
+
+    const distance = calculateDistance(lastPos.value, newPos)
+
+    // 等比例缩放
+    switch (pointPosition) {
+      case 'top-left':
+        pos.viewX += distance
+        pos.viewY += distance
+        pos.viewSize -= distance
+        break
+    }
+
+    lastPos.value = newPos
+  }
+
+  const handlePointMouseUp = () => {
+    pointPosition = void 0
+    document.removeEventListener('mousemove', handlePointMouseMove)
+    document.removeEventListener('mouseup', handlePointMouseUp)
+  }
+
+  return { handleMouseDown, handlePointMouseDown }
 }
 
 interface WheelHandlesOptions {
@@ -113,6 +153,7 @@ interface WheelHandlesOptions {
   viewportRef: Ref<HTMLElement | undefined>
   minImageScale: Ref<number>
   getStep: (deltaY?: number) => number
+  props: Reactive<ViewportProps>
 }
 
 export const useWheelHandles = (options: WheelHandlesOptions) => {
@@ -151,6 +192,7 @@ interface TouchHandlesOptions {
   minImageScale: Ref<number>
   viewportRef: Ref<HTMLElement | undefined>
   checkImageBack: (transition?: boolean) => void
+  props: Reactive<ViewportProps>
 }
 
 export const useTouchHandles = (options: TouchHandlesOptions) => {
@@ -300,4 +342,89 @@ export const useBacking = (options: BackingOptions) => {
   })
 
   return { backing, handleTransitionEnd }
+}
+
+export const useImageInfo = () => {
+  const info = ref<ImageInfo>()
+  let lastUrl: string | undefined
+
+  onUnmounted(() => {
+    if (info.value?.url) {
+      URL.revokeObjectURL(info.value.url)
+    }
+  })
+
+  watchEffect(() => {
+    if (lastUrl && lastUrl !== info.value?.url) {
+      URL.revokeObjectURL(lastUrl)
+    }
+    lastUrl = info.value?.url
+  })
+
+  return info
+}
+
+interface InitPositionOptions {
+  props: Reactive<ViewportProps>
+  pos: Reactive<Position>
+  info: Ref<ImageInfo | undefined>
+  minImageScale: Ref<number, number>
+  step: Ref<number, number>
+  ctrlStep: Ref<number, number>
+  shiftStep: Ref<number, number>
+}
+
+export const useInitPosition = (options: InitPositionOptions) => {
+  const { props, pos, info, minImageScale, step, ctrlStep, shiftStep } = options
+
+  let first = true
+
+  watchEffect(() => {
+    pos.viewportWidth = props.size ?? props.width ?? 0
+    pos.viewportHeight = props.size ?? props.height ?? 0
+    pos.viewSize = props.viewSize ?? 0
+
+    if (!props.fixedImage || first) {
+      pos.viewX = (pos.viewportWidth - pos.viewSize) / 2
+      pos.viewY = (pos.viewportHeight - pos.viewSize) / 2
+    }
+
+    first = false
+  })
+
+  watch(
+    () => props.fixedImage,
+    () => {
+      if (info.value) {
+        initPosition(info.value)
+      }
+    },
+  )
+
+  const initPosition = (res: ImageSelectResult) => {
+    info.value = res
+    info.value.url = URL.createObjectURL(res.file)
+
+    pos.imageWidth = res.width
+    pos.imageHeight = res.height
+
+    if (props.fixedImage) {
+      pos.imageScale =
+        Math.abs(res.width - pos.viewportWidth) > Math.abs(res.height - pos.viewportHeight)
+          ? pos.viewportWidth / res.width
+          : pos.viewportHeight / res.height
+      pos.imageX = (pos.viewportWidth - res.width * pos.imageScale) / 2
+      pos.imageY = (pos.viewportHeight - res.height * pos.imageScale) / 2
+    } else {
+      pos.imageScale = Math.max(pos.viewSize / res.width, pos.viewSize / res.height)
+      pos.imageX = (pos.viewportWidth - res.width * pos.imageScale) / 2
+      pos.imageY = (pos.viewportHeight - res.height * pos.imageScale) / 2
+      minImageScale.value = pos.imageScale
+      step.value = minImageScale.value * (props.scaleStep! / pos.viewSize)
+      ctrlStep.value = minImageScale.value * (props.ctrlScaleStep! / pos.viewSize)
+      shiftStep.value = minImageScale.value * (props.shiftScaleStep! / pos.viewSize)
+    }
+  }
+
+  return { initPosition }
 }

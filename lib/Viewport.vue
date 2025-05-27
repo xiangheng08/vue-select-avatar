@@ -1,44 +1,42 @@
 <script setup lang="ts">
 import { getDefaultPosition } from './data'
-import { computed, onUnmounted, reactive, ref } from 'vue'
+import { computed, reactive, ref } from 'vue'
 import { cropper as cropperFn, getIsClipPathSupported, selectImage } from './utils'
 import {
   useBacking,
+  useImageInfo,
+  useInitPosition,
   useMouseHandles,
   usePressKey,
   useStyles,
   useTouchHandles,
   useWheelHandles,
 } from './hooks'
-import type {
-  CropperOptions,
-  ImageInfo,
-  ImageSelectOptions,
-  ImageSelectResult,
-  ViewportProps,
-} from './types'
+import type { CropperOptions, ImageSelectOptions, ViewportProps } from './types'
 
 const props = withDefaults(defineProps<ViewportProps>(), {
   size: 300,
   viewSize: 180,
+  grid: false,
   scaleStep: 10,
   ctrlScaleStep: 5,
   shiftScaleStep: 1,
   wheelReverse: false,
+  fixedImage: false,
 })
 
-const pos = reactive(getDefaultPosition(props))
-const info = ref<ImageInfo>()
+const pos = reactive(getDefaultPosition())
+const info = useImageInfo()
 const src = computed(() => info.value?.url)
 const moving = ref(false)
 const viewportRef = ref<HTMLElement>()
 const minImageScale = ref(0)
-const isClipPathSupported = ref(getIsClipPathSupported())
 const step = ref(0)
 const ctrlStep = ref(0)
 const shiftStep = ref(0)
 const pressCtrl = usePressKey('Control')
 const pressShift = usePressKey('Shift')
+const isClipPathSupported = ref(getIsClipPathSupported())
 
 const { backing, handleTransitionEnd } = useBacking({ moving })
 
@@ -90,26 +88,23 @@ const getStep = (deltaY = -1) => {
   return _step
 }
 
-const initImageInfo = (res: ImageSelectResult) => {
-  if (info.value?.url) {
-    URL.revokeObjectURL(info.value.url)
-  }
+const { initPosition } = useInitPosition({
+  props,
+  pos,
+  info,
+  minImageScale,
+  step,
+  ctrlStep,
+  shiftStep,
+})
 
-  info.value = res
-  info.value.url = URL.createObjectURL(res.file)
-
-  pos.imageWidth = res.width
-  pos.imageHeight = res.height
-  pos.imageScale = Math.max(pos.viewSize / res.width, pos.viewSize / res.height)
-  pos.imageX = (pos.viewportWidth - res.width * pos.imageScale) / 2
-  pos.imageY = (pos.viewportHeight - res.height * pos.imageScale) / 2
-  minImageScale.value = pos.imageScale
-  step.value = minImageScale.value * (props.scaleStep / pos.viewSize)
-  ctrlStep.value = minImageScale.value * (props.ctrlScaleStep / pos.viewSize)
-  shiftStep.value = minImageScale.value * (props.shiftScaleStep / pos.viewSize)
-}
-
-const { handleMouseDown } = useMouseHandles({ moving, checkImageBack, info, pos })
+const { handleMouseDown, handlePointMouseDown } = useMouseHandles({
+  moving,
+  checkImageBack,
+  info,
+  pos,
+  props,
+})
 
 const { handleWheel } = useWheelHandles({
   moving,
@@ -119,6 +114,7 @@ const { handleWheel } = useWheelHandles({
   viewportRef,
   minImageScale,
   getStep,
+  props,
 })
 
 const { handleTouchStart } = useTouchHandles({
@@ -128,23 +124,18 @@ const { handleTouchStart } = useTouchHandles({
   minImageScale,
   viewportRef,
   checkImageBack,
+  props,
 })
 
 const select = async (options?: ImageSelectOptions) => {
   const res = await selectImage(options)
-  initImageInfo(res)
+  initPosition(res)
 }
 
 const cropper = async (options?: CropperOptions) => {
   if (!info.value) throw new Error('Please select an image first')
   return cropperFn(info.value, pos, options)
 }
-
-onUnmounted(() => {
-  if (info.value?.url) {
-    URL.revokeObjectURL(info.value.url)
-  }
-})
 
 defineExpose({ select, cropper })
 </script>
@@ -168,21 +159,37 @@ defineExpose({ select, cropper })
       @transitionend="handleTransitionEnd"
     />
     <div class="mask" :style="maskStyle"></div>
-    <div class="view" :style="viewStyle">
-      <!-- 如果支持 clip-path 属性，则不渲染 inner-image，已减少性能消耗 -->
-      <img
-        class="inner-image"
-        :src="src"
-        alt="inner-image"
-        :style="innerImageStyle"
-        v-if="src && !isClipPathSupported"
-      />
+    <!-- 如果支持 clip-path 属性，则不渲染 view，已减少性能消耗 -->
+    <div class="view" :style="viewStyle" v-if="src && !isClipPathSupported">
+      <img class="inner-image" :src="src" alt="inner-image" :style="innerImageStyle" />
+    </div>
+    <div class="consoles" :style="viewStyle" v-if="fixedImage">
+      <div class="line top"><slot name="line-top"></slot></div>
+      <div class="line right"><slot name="line-right"></slot></div>
+      <div class="line bottom"><slot name="line-bottom"></slot></div>
+      <div class="line left"><slot name="line-left"></slot></div>
+      <div class="point top-left" @mousedown="handlePointMouseDown($event, 'top-left')">
+        <slot name="point-top-left"></slot>
+      </div>
+      <div class="point top-right" @mousedown="handlePointMouseDown($event, 'top-right')">
+        <slot name="point-top-right"></slot>
+      </div>
+      <div class="point bottom-left" @mousedown="handlePointMouseDown($event, 'bottom-left')">
+        <slot name="point-bottom-left"></slot>
+      </div>
+      <div class="point bottom-right" @mousedown="handlePointMouseDown($event, 'bottom-right')">
+        <slot name="point-bottom-right"></slot>
+      </div>
     </div>
   </div>
 </template>
 
 <style lang="scss" scoped>
 .viewport {
+  --line-color: #fff;
+  --point-size: 10px;
+  --mask-color: rgba(0, 0, 0, 0.5);
+
   position: relative;
   overflow: hidden;
   &,
@@ -219,7 +226,7 @@ defineExpose({ select, cropper })
     top: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.3);
+    background-color: var(--mask-color);
     pointer-events: none;
   }
   .view {
@@ -236,6 +243,66 @@ defineExpose({ select, cropper })
     transform-origin: left top;
     pointer-events: none;
     user-select: none;
+  }
+  .consoles {
+    position: absolute;
+    left: 0;
+    top: 0;
+    transform-origin: left top;
+    .line {
+      position: absolute;
+      background-color: var(--line-color);
+      &.top {
+        left: -1px;
+        top: -1px;
+        width: calc(100% + 2px);
+        height: 1px;
+      }
+      &.right {
+        right: -1px;
+        top: -1px;
+        width: 1px;
+        height: calc(100% + 2px);
+      }
+      &.bottom {
+        left: -1px;
+        bottom: -1px;
+        width: calc(100% + 2px);
+        height: 1px;
+      }
+      &.left {
+        left: -1px;
+        top: -1px;
+        width: 1px;
+        height: calc(100% + 2px);
+      }
+    }
+    .point {
+      position: absolute;
+      width: var(--point-size);
+      height: var(--point-size);
+      border: 1px solid var(--line-color);
+      &.top-left {
+        left: calc(0px - var(--point-size));
+        top: calc(0px - var(--point-size));
+        cursor: se-resize;
+      }
+      &.top-right {
+        right: calc(0px - var(--point-size));
+        top: calc(0px - var(--point-size));
+        cursor: sw-resize;
+      }
+      &.bottom-left {
+        left: calc(0px - var(--point-size));
+        bottom: calc(0px - var(--point-size));
+        cursor: ne-resize;
+      }
+      &.bottom-right {
+        right: calc(0px - var(--point-size));
+        bottom: calc(0px - var(--point-size));
+        cursor: nw-resize;
+      }
+    }
   }
 }
 </style>

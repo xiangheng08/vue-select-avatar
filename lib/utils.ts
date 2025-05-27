@@ -5,6 +5,7 @@ import type {
   ImageSelectOptions,
   ImageSelectResult,
   Position,
+  SimplePosition,
 } from './types'
 
 export interface SelectFileOptions {
@@ -257,4 +258,12 @@ export const cropper = async (info: ImageInfo, pos: Position, options?: CropperO
 export const getIsClipPathSupported = () => {
   const element = document.createElement('div')
   return 'clipPath' in element.style
+}
+
+export const calculateDistance = (point1: SimplePosition, point2: SimplePosition): number => {
+  const dx = point2.x - point1.x
+  const dy = point2.y - point1.y
+  const distance = Math.hypot(dx, dy)
+  const sign = dx >= 0 && dy >= 0 ? 1 : -1
+  return distance * sign
 }
