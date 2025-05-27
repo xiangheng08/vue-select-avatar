@@ -1,14 +1,20 @@
 <script setup lang="ts">
 import { getDefaultPosition } from './data'
-import { usePressKey, useStyles } from './hooks'
-import { computed, onUnmounted, reactive, ref, watch } from 'vue'
-import { cropper, getIsClipPathSupported, selectImage } from './utils'
+import { computed, onUnmounted, reactive, ref } from 'vue'
+import { cropper as cropperFn, getIsClipPathSupported, selectImage } from './utils'
+import {
+  useBacking,
+  useMouseHandles,
+  usePressKey,
+  useStyles,
+  useTouchHandles,
+  useWheelHandles,
+} from './hooks'
 import type {
   CropperOptions,
   ImageInfo,
   ImageSelectOptions,
   ImageSelectResult,
-  SimplePosition,
   ViewportProps,
 } from './types'
 
@@ -25,8 +31,6 @@ const pos = reactive(getDefaultPosition(props))
 const info = ref<ImageInfo>()
 const src = computed(() => info.value?.url)
 const moving = ref(false)
-const backing = ref(false)
-const lastPos = ref<SimplePosition>({ x: 0, y: 0 })
 const viewportRef = ref<HTMLElement>()
 const minImageScale = ref(0)
 const isClipPathSupported = ref(getIsClipPathSupported())
@@ -35,10 +39,8 @@ const ctrlStep = ref(0)
 const shiftStep = ref(0)
 const pressCtrl = usePressKey('Control')
 const pressShift = usePressKey('Shift')
-const touchStart = ref<SimplePosition>()
-const touchStartDistance = ref<number>()
-const isTwoFingerZoom = ref(false)
-const touchCenter = ref<SimplePosition>({ x: 0, y: 0 })
+
+const { backing, handleTransitionEnd } = useBacking({ moving })
 
 const { viewportStyle, maskStyle, viewStyle, imageStyle, innerImageStyle } = useStyles(pos)
 
@@ -107,184 +109,36 @@ const initImageInfo = (res: ImageSelectResult) => {
   shiftStep.value = minImageScale.value * (props.shiftScaleStep / pos.viewSize)
 }
 
-const handleMouseDown = (e: MouseEvent) => {
-  if (!info.value) return
-  e.preventDefault()
-  e.stopPropagation()
-  lastPos.value.x = e.clientX
-  lastPos.value.y = e.clientY
-  moving.value = true
-  document.addEventListener('mousemove', handleMouseMove)
-  document.addEventListener('mouseup', handleMouseUp)
-}
+const { handleMouseDown } = useMouseHandles({ moving, checkImageBack, info, pos })
 
-const handleMouseMove = (e: MouseEvent) => {
-  if (!moving.value) return
-  e.preventDefault()
-  e.stopPropagation()
-  pos.imageX += e.clientX - lastPos.value.x
-  pos.imageY += e.clientY - lastPos.value.y
-  lastPos.value.x = e.clientX
-  lastPos.value.y = e.clientY
-}
-
-const handleMouseUp = () => {
-  moving.value = false
-  document.removeEventListener('mousemove', handleMouseMove)
-  document.removeEventListener('mouseup', handleMouseUp)
-  checkImageBack()
-}
-
-const handleWheel = (e: WheelEvent) => {
-  if (!info.value || moving.value) return
-  e.preventDefault()
-  e.stopPropagation()
-
-  // 获取视口位置和尺寸
-  const viewport = viewportRef.value!
-  const rect = viewport.getBoundingClientRect()
-  const vx = e.clientX - rect.left // 鼠标在视口中的X坐标
-  const vy = e.clientY - rect.top // 鼠标在视口中的Y坐标
-
-  const oldScale = pos.imageScale
-  const delta = getStep(e.deltaY)
-  const newScale = Math.max(minImageScale.value, oldScale + delta) // 避免缩放过小
-
-  // 以鼠标为中心缩放
-  pos.imageX = vx - (vx - pos.imageX) * (newScale / oldScale)
-  pos.imageY = vy - (vy - pos.imageY) * (newScale / oldScale)
-
-  pos.imageScale = newScale
-  checkImageBack(false)
-}
-
-const handleTransitionEnd = () => {
-  backing.value = false
-}
-
-const handleTouchStart = (e: TouchEvent) => {
-  if (!info.value) return
-
-  e.preventDefault()
-  e.stopPropagation()
-
-  if (e.touches.length === 1) {
-    // 单指开始
-    const touch = e.touches[0]
-    touchStart.value = { x: touch.clientX, y: touch.clientY }
-    isTwoFingerZoom.value = false
-  } else if (e.touches.length >= 2) {
-    // 双指开始
-    isTwoFingerZoom.value = true
-    touchCenter.value = {
-      x: (e.touches[0].clientX + e.touches[1].clientX) / 2,
-      y: (e.touches[0].clientY + e.touches[1].clientY) / 2,
-    }
-    touchStartDistance.value = Math.hypot(
-      e.touches[0].clientX - e.touches[1].clientX,
-      e.touches[0].clientY - e.touches[1].clientY,
-    )
-  }
-
-  moving.value = true
-
-  document.addEventListener('touchmove', handleTouchMove, { passive: false })
-  document.addEventListener('touchend', handleTouchEnd)
-  document.addEventListener('touchcancel', handleTouchEnd)
-}
-
-const handleTouchMove = (e: TouchEvent) => {
-  if (!info.value || !moving.value) return
-
-  e.preventDefault()
-  e.stopPropagation()
-
-  if (e.touches.length === 1 && !isTwoFingerZoom.value) {
-    // 单指移动
-    const touch = e.touches[0]
-    if (touchStart.value) {
-      const dx = touch.clientX - touchStart.value.x
-      const dy = touch.clientY - touchStart.value.y
-      pos.imageX += dx
-      pos.imageY += dy
-      touchStart.value = { x: touch.clientX, y: touch.clientY }
-    }
-  } else if (e.touches.length >= 2) {
-    // 双指操作：同时缩放和平移
-    const currentDistance = Math.hypot(
-      e.touches[0].clientX - e.touches[1].clientX,
-      e.touches[0].clientY - e.touches[1].clientY,
-    )
-
-    // 计算当前双指中心点
-    const currentCenter = {
-      x: (e.touches[0].clientX + e.touches[1].clientX) / 2,
-      y: (e.touches[0].clientY + e.touches[1].clientY) / 2,
-    }
-
-    // 计算中心点偏移量
-    const dx = currentCenter.x - touchCenter.value.x
-    const dy = currentCenter.y - touchCenter.value.y
-
-    // 更新图片位置
-    pos.imageX += dx
-    pos.imageY += dy
-
-    // 更新 touchCenter 供下一次计算使用
-    touchCenter.value = currentCenter
-
-    // 缩放逻辑
-    if (touchStartDistance.value) {
-      const scaleRatio = currentDistance / touchStartDistance.value
-      const newScale = Math.max(minImageScale.value, pos.imageScale * scaleRatio)
-
-      // 计算视口位置
-      const viewport = viewportRef.value!
-      const rect = viewport.getBoundingClientRect()
-      const vx = touchCenter.value.x - rect.left
-      const vy = touchCenter.value.y - rect.top
-
-      // 以双指中心缩放
-      pos.imageX = vx - (vx - pos.imageX) * (newScale / pos.imageScale)
-      pos.imageY = vy - (vy - pos.imageY) * (newScale / pos.imageScale)
-      pos.imageScale = newScale
-
-      // 更新 touchStartDistance 供下一次缩放使用
-      touchStartDistance.value = currentDistance
-    }
-  }
-}
-
-const handleTouchEnd = (e: TouchEvent) => {
-  if (!moving.value) return
-
-  if (e.touches.length === 1) {
-    // 切换到单指拖动
-    const touch = e.touches[0]
-    touchStart.value = { x: touch.clientX, y: touch.clientY }
-    isTwoFingerZoom.value = false
-  }
-  if (e.touches.length > 0) return
-  touchStart.value = void 0
-  touchStartDistance.value = void 0
-  isTwoFingerZoom.value = false
-  moving.value = false
-  checkImageBack()
-  document.removeEventListener('touchmove', handleTouchMove)
-  document.removeEventListener('touchend', handleTouchEnd)
-  document.removeEventListener('touchcancel', handleTouchCancel)
-}
-
-const handleTouchCancel = (e: TouchEvent) => {
-  handleTouchEnd(e)
-}
-
-watch(moving, (val) => {
-  if (val) {
-    // 开始移动时，停止回弹
-    backing.value = false
-  }
+const { handleWheel } = useWheelHandles({
+  moving,
+  checkImageBack,
+  info,
+  pos,
+  viewportRef,
+  minImageScale,
+  getStep,
 })
+
+const { handleTouchStart } = useTouchHandles({
+  info,
+  moving,
+  pos,
+  minImageScale,
+  viewportRef,
+  checkImageBack,
+})
+
+const select = async (options?: ImageSelectOptions) => {
+  const res = await selectImage(options)
+  initImageInfo(res)
+}
+
+const cropper = async (options?: CropperOptions) => {
+  if (!info.value) throw new Error('Please select an image first')
+  return cropperFn(info.value, pos, options)
+}
 
 onUnmounted(() => {
   if (info.value?.url) {
@@ -292,16 +146,7 @@ onUnmounted(() => {
   }
 })
 
-defineExpose({
-  async select(options?: ImageSelectOptions) {
-    const res = await selectImage(options)
-    initImageInfo(res)
-  },
-  async cropper(options?: CropperOptions) {
-    if (!info.value) throw new Error('Please select an image first')
-    return cropper(info.value, pos, options)
-  },
-})
+defineExpose({ select, cropper })
 </script>
 
 <template>
