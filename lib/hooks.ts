@@ -1,7 +1,6 @@
 import { watchEffect, reactive, ref, onMounted, onUnmounted, watch } from 'vue'
 import type { CSSProperties, Reactive, Ref } from 'vue'
 import type { ImageInfo, ImageSelectResult, Position, SimplePosition, ViewportProps } from './types'
-import { calculateDistance } from './utils'
 
 export const useStyles = (
   pos: Position,
@@ -122,14 +121,19 @@ export const useMouseHandles = (options: MouseHandlesOptions) => {
 
     const newPos = { x: e.clientX, y: e.clientY }
 
-    const distance = calculateDistance(lastPos.value, newPos)
-
     // 等比例缩放
     switch (pointPosition) {
       case 'top-left':
-        pos.viewX += distance
-        pos.viewY += distance
-        pos.viewSize -= distance
+        // TODO: implement
+        break
+      case 'top-right':
+        // TODO: implement
+        break
+      case 'bottom-left':
+        // TODO: implement
+        break
+      case 'bottom-right':
+        // TODO: implement
         break
     }
 
