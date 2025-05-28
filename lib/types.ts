@@ -51,6 +51,10 @@ export interface ViewportProps {
    * 图片固定模式：true=固定图片移动视窗，false=固定视窗移动图片（默认）
    */
   fixedImage?: boolean
+  /**
+   * 最小观察窗口尺寸
+   */
+  minViewSize?: number
 }
 
 export interface ImageSelectOptions {
@@ -131,3 +135,5 @@ export interface CropperOptions {
    */
   filename?: string
 }
+
+export type PointPosition = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right'

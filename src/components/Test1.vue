@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { Viewport, type ImageSelectOptions } from '../../lib'
 import { formatBytes } from './utils/common'
+import { loadImage, Viewport, type ImageSelectOptions } from '../../lib'
 
 const viewportRef = ref<InstanceType<typeof Viewport>>()
 const selectOptions: ImageSelectOptions = {
@@ -11,6 +11,7 @@ const selectOptions: ImageSelectOptions = {
 }
 
 const src = ref('')
+const imageInfoText = ref('')
 
 const handleCropper = async () => {
   if (src.value) {
@@ -20,8 +21,11 @@ const handleCropper = async () => {
   const file = await viewportRef.value?.cropper({ size: 180, type: 'image/webp' })
 
   if (file instanceof File) {
-    console.log(file, formatBytes(file.size))
+    const size = formatBytes(file.size)
+    console.log(file, size)
     src.value = URL.createObjectURL(file)
+    const image = await loadImage(src.value)
+    imageInfoText.value = `${image.width}x${image.height} ${size}`
   }
 }
 </script>
@@ -30,5 +34,8 @@ const handleCropper = async () => {
   <Viewport ref="viewportRef" grid fixed-image />
   <button @click="viewportRef?.select(selectOptions)">选择图片</button>
   <button @click="handleCropper">截取</button>
-  <img :src="src" alt="" />
+  <div style="display: flex; flex-direction: column; align-items: center">
+    <span style="font-size: 12px; margin-bottom: 4px">{{ imageInfoText }}</span>
+    <img :src="src" alt="" />
+  </div>
 </template>

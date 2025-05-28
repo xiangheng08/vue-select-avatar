@@ -1,6 +1,13 @@
 import { watchEffect, reactive, ref, onMounted, onUnmounted, watch } from 'vue'
 import type { CSSProperties, Reactive, Ref } from 'vue'
-import type { ImageInfo, ImageSelectResult, Position, SimplePosition, ViewportProps } from './types'
+import type {
+  ImageInfo,
+  ImageSelectResult,
+  PointPosition,
+  Position,
+  SimplePosition,
+  ViewportProps,
+} from './types'
 
 export const useStyles = (
   pos: Position,
@@ -59,20 +66,31 @@ export const usePressKey = (key: string) => {
 }
 
 interface MouseHandlesOptions {
-  moving: Ref<boolean>
+  imageMoving: Ref<boolean>
+  viewMoving: Ref<boolean>
+  viewResizing: Ref<boolean>
   checkImageBack: (transition?: boolean) => void
   info: Ref<ImageInfo | undefined>
   pos: Reactive<Position>
   props: Reactive<ViewportProps>
+  viewportRef: Ref<HTMLElement | undefined>
+  pointPosition: Ref<PointPosition | undefined>
 }
 
-type PointPosition = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right'
-
 export const useMouseHandles = (options: MouseHandlesOptions) => {
-  const { moving, checkImageBack, info, pos, props } = options
+  const {
+    imageMoving,
+    viewMoving,
+    viewResizing,
+    checkImageBack,
+    info,
+    pos,
+    props,
+    viewportRef,
+    pointPosition,
+  } = options
 
   const lastPos = ref<SimplePosition>({ x: 0, y: 0 })
-  let pointPosition: PointPosition | undefined
 
   const handleMouseDown = (e: MouseEvent) => {
     if (!info.value || props.fixedImage) return
@@ -82,7 +100,7 @@ export const useMouseHandles = (options: MouseHandlesOptions) => {
 
     lastPos.value.x = e.clientX
     lastPos.value.y = e.clientY
-    moving.value = true
+    imageMoving.value = true
     document.addEventListener('mousemove', handleMouseMove)
     document.addEventListener('mouseup', handleMouseUp)
   }
@@ -98,42 +116,84 @@ export const useMouseHandles = (options: MouseHandlesOptions) => {
   }
 
   const handleMouseUp = () => {
-    moving.value = false
+    imageMoving.value = false
     document.removeEventListener('mousemove', handleMouseMove)
     document.removeEventListener('mouseup', handleMouseUp)
     checkImageBack()
   }
 
   const handlePointMouseDown = (e: MouseEvent, position: PointPosition) => {
+    if (!viewportRef.value) return
+
     e.preventDefault()
     e.stopPropagation()
 
-    pointPosition = position
-    lastPos.value.x = e.clientX
-    lastPos.value.y = e.clientY
+    viewResizing.value = true
+    pointPosition.value = position
+
+    const { left, top } = viewportRef.value.getBoundingClientRect()
+    lastPos.value.x = e.clientX - left
+    lastPos.value.y = e.clientY - top
+
     document.addEventListener('mousemove', handlePointMouseMove)
     document.addEventListener('mouseup', handlePointMouseUp)
   }
 
   const handlePointMouseMove = (e: MouseEvent) => {
+    if (!viewportRef.value) return
+
     e.preventDefault()
     e.stopPropagation()
 
-    const newPos = { x: e.clientX, y: e.clientY }
+    const { left, top } = viewportRef.value.getBoundingClientRect()
+
+    const newPos = { x: e.clientX - left, y: e.clientY - top }
 
     // 等比例缩放
-    switch (pointPosition) {
+    switch (pointPosition.value) {
       case 'top-left':
-        // TODO: implement
+        const dx1 = newPos.x - pos.viewX
+        const dy1 = newPos.y - pos.viewY
+        if (newPos.x >= pos.viewX + dy1 && newPos.x <= pos.viewX + pos.viewSize + dy1 * 2) {
+          pos.viewX += dy1
+          pos.viewY += dy1
+          pos.viewSize -= dy1
+        } else {
+          pos.viewX += dx1
+          pos.viewY += dx1
+          pos.viewSize -= dx1
+        }
         break
       case 'top-right':
-        // TODO: implement
+        const dx2 = newPos.x - (pos.viewX + pos.viewSize)
+        const dy2 = newPos.y - pos.viewY
+        if (newPos.x >= pos.viewX && newPos.x <= pos.viewX + pos.viewSize - dy2) {
+          pos.viewY += dy2
+          pos.viewSize -= dy2
+        } else {
+          pos.viewY -= dx2
+          pos.viewSize += dx2
+        }
         break
       case 'bottom-left':
-        // TODO: implement
+        const dx3 = newPos.x - pos.viewX
+        const dy3 = newPos.y - (pos.viewY + pos.viewSize)
+        if (newPos.x >= pos.viewX - dy3 && newPos.x <= pos.viewX - dy3 + (pos.viewSize + dy3)) {
+          pos.viewX -= dy3
+          pos.viewSize += dy3
+        } else {
+          pos.viewX += dx3
+          pos.viewSize -= dx3
+        }
         break
       case 'bottom-right':
-        // TODO: implement
+        const dx4 = newPos.x - (pos.viewX + pos.viewSize)
+        const dy4 = newPos.y - (pos.viewY + pos.viewSize)
+        if (newPos.x >= pos.viewX && newPos.x <= pos.viewX + pos.viewSize + dy4) {
+          pos.viewSize += dy4
+        } else {
+          pos.viewSize += dx4
+        }
         break
     }
 
@@ -141,16 +201,49 @@ export const useMouseHandles = (options: MouseHandlesOptions) => {
   }
 
   const handlePointMouseUp = () => {
-    pointPosition = void 0
+    viewResizing.value = false
+    pointPosition.value = void 0
     document.removeEventListener('mousemove', handlePointMouseMove)
     document.removeEventListener('mouseup', handlePointMouseUp)
   }
 
-  return { handleMouseDown, handlePointMouseDown }
+  const handleViewMouseDown = (e: MouseEvent) => {
+    if (!props.fixedImage || !viewportRef.value) return
+
+    e.preventDefault()
+    e.stopPropagation()
+
+    viewMoving.value = true
+
+    lastPos.value.x = e.clientX
+    lastPos.value.y = e.clientY
+
+    document.addEventListener('mousemove', handleViewMouseMove)
+    document.addEventListener('mouseup', handleViewMouseUp)
+  }
+
+  const handleViewMouseMove = (e: MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+
+    pos.viewX += e.clientX - lastPos.value.x
+    pos.viewY += e.clientY - lastPos.value.y
+
+    lastPos.value.x = e.clientX
+    lastPos.value.y = e.clientY
+  }
+
+  const handleViewMouseUp = () => {
+    viewMoving.value = false
+    document.removeEventListener('mousemove', handleViewMouseMove)
+    document.removeEventListener('mouseup', handleViewMouseUp)
+  }
+
+  return { handleMouseDown, handlePointMouseDown, handleViewMouseDown }
 }
 
 interface WheelHandlesOptions {
-  moving: Ref<boolean>
+  imageMoving: Ref<boolean>
   checkImageBack: (transition?: boolean) => void
   info: Ref<ImageInfo | undefined>
   pos: Reactive<Position>
@@ -161,10 +254,10 @@ interface WheelHandlesOptions {
 }
 
 export const useWheelHandles = (options: WheelHandlesOptions) => {
-  const { moving, pos, viewportRef, info, checkImageBack, minImageScale, getStep } = options
+  const { imageMoving, pos, viewportRef, info, checkImageBack, minImageScale, getStep } = options
 
   const handleWheel = (e: WheelEvent) => {
-    if (!info.value || moving.value) return
+    if (!info.value || imageMoving.value) return
     e.preventDefault()
     e.stopPropagation()
 
@@ -191,7 +284,7 @@ export const useWheelHandles = (options: WheelHandlesOptions) => {
 
 interface TouchHandlesOptions {
   info: Ref<ImageInfo | undefined>
-  moving: Ref<boolean>
+  imageMoving: Ref<boolean>
   pos: Reactive<Position>
   minImageScale: Ref<number>
   viewportRef: Ref<HTMLElement | undefined>
@@ -200,7 +293,7 @@ interface TouchHandlesOptions {
 }
 
 export const useTouchHandles = (options: TouchHandlesOptions) => {
-  const { info, moving, pos, minImageScale, viewportRef, checkImageBack } = options
+  const { info, imageMoving, pos, minImageScale, viewportRef, checkImageBack } = options
 
   const touchStart = ref<SimplePosition>()
   const touchStartDistance = ref<number>()
@@ -230,7 +323,7 @@ export const useTouchHandles = (options: TouchHandlesOptions) => {
       )
     }
 
-    moving.value = true
+    imageMoving.value = true
 
     document.addEventListener('touchmove', handleTouchMove, { passive: false })
     document.addEventListener('touchend', handleTouchEnd)
@@ -238,7 +331,7 @@ export const useTouchHandles = (options: TouchHandlesOptions) => {
   }
 
   const handleTouchMove = (e: TouchEvent) => {
-    if (!info.value || !moving.value) return
+    if (!info.value || !imageMoving.value) return
 
     e.preventDefault()
     e.stopPropagation()
@@ -300,7 +393,7 @@ export const useTouchHandles = (options: TouchHandlesOptions) => {
   }
 
   const handleTouchEnd = (e: TouchEvent) => {
-    if (!moving.value) return
+    if (!imageMoving.value) return
 
     if (e.touches.length === 1) {
       // 切换到单指拖动
@@ -312,7 +405,7 @@ export const useTouchHandles = (options: TouchHandlesOptions) => {
     touchStart.value = void 0
     touchStartDistance.value = void 0
     isTwoFingerZoom.value = false
-    moving.value = false
+    imageMoving.value = false
     checkImageBack()
     document.removeEventListener('touchmove', handleTouchMove)
     document.removeEventListener('touchend', handleTouchEnd)
@@ -327,10 +420,10 @@ export const useTouchHandles = (options: TouchHandlesOptions) => {
 }
 
 interface BackingOptions {
-  moving: Ref<boolean>
+  imageMoving: Ref<boolean>
 }
 export const useBacking = (options: BackingOptions) => {
-  const { moving } = options
+  const { imageMoving } = options
 
   const backing = ref(false)
 
@@ -338,7 +431,7 @@ export const useBacking = (options: BackingOptions) => {
     backing.value = false
   }
 
-  watch(moving, (val) => {
+  watch(imageMoving, (val) => {
     if (val) {
       // 开始移动时，停止回弹
       backing.value = false

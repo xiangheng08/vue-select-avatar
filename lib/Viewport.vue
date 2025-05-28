@@ -12,7 +12,7 @@ import {
   useTouchHandles,
   useWheelHandles,
 } from './hooks'
-import type { CropperOptions, ImageSelectOptions, ViewportProps } from './types'
+import type { CropperOptions, ImageSelectOptions, PointPosition, ViewportProps } from './types'
 
 const props = withDefaults(defineProps<ViewportProps>(), {
   size: 300,
@@ -23,12 +23,15 @@ const props = withDefaults(defineProps<ViewportProps>(), {
   shiftScaleStep: 1,
   wheelReverse: false,
   fixedImage: false,
+  minViewSize: 10,
 })
 
 const pos = reactive(getDefaultPosition())
 const info = useImageInfo()
 const src = computed(() => info.value?.url)
-const moving = ref(false)
+const imageMoving = ref(false)
+const viewMoving = ref(false)
+const viewResizing = ref(false)
 const viewportRef = ref<HTMLElement>()
 const minImageScale = ref(0)
 const step = ref(0)
@@ -37,14 +40,15 @@ const shiftStep = ref(0)
 const pressCtrl = usePressKey('Control')
 const pressShift = usePressKey('Shift')
 const isClipPathSupported = ref(getIsClipPathSupported())
+const pointPosition = ref<PointPosition>()
 
-const { backing, handleTransitionEnd } = useBacking({ moving })
+const { backing, handleTransitionEnd } = useBacking({ imageMoving })
 
 const { viewportStyle, maskStyle, viewStyle, imageStyle, innerImageStyle } = useStyles(pos)
 
 // 检查图片是否需要回正位置
 const checkImageBack = (transition = true) => {
-  if (!info.value) return
+  if (!info.value || !props.fixedImage) return
 
   const imageWidth = pos.imageWidth * pos.imageScale
   const imageHeight = pos.imageHeight * pos.imageScale
@@ -98,16 +102,20 @@ const { initPosition } = useInitPosition({
   shiftStep,
 })
 
-const { handleMouseDown, handlePointMouseDown } = useMouseHandles({
-  moving,
+const { handleMouseDown, handlePointMouseDown, handleViewMouseDown } = useMouseHandles({
+  imageMoving,
+  viewMoving,
+  viewResizing,
   checkImageBack,
   info,
   pos,
   props,
+  viewportRef,
+  pointPosition,
 })
 
 const { handleWheel } = useWheelHandles({
-  moving,
+  imageMoving,
   checkImageBack,
   info,
   pos,
@@ -119,7 +127,7 @@ const { handleWheel } = useWheelHandles({
 
 const { handleTouchStart } = useTouchHandles({
   info,
-  moving,
+  imageMoving,
   pos,
   minImageScale,
   viewportRef,
@@ -144,7 +152,17 @@ defineExpose({ select, cropper })
   <div
     class="viewport"
     :style="viewportStyle"
-    :class="{ grid, moving, backing }"
+    :class="[
+      {
+        grid,
+        backing,
+        'image-moving': imageMoving,
+        'view-moving': viewMoving,
+        'view-resizing': viewResizing,
+        'fixed-image': fixedImage,
+      },
+      pointPosition,
+    ]"
     ref="viewportRef"
     @mousedown="handleMouseDown"
     @wheel="handleWheel"
@@ -163,7 +181,7 @@ defineExpose({ select, cropper })
     <div class="view" :style="viewStyle" v-if="src && !isClipPathSupported">
       <img class="inner-image" :src="src" alt="inner-image" :style="innerImageStyle" />
     </div>
-    <div class="consoles" :style="viewStyle" v-if="fixedImage">
+    <div class="consoles" :style="viewStyle" v-if="fixedImage" @mousedown="handleViewMouseDown">
       <div class="line top"><slot name="line-top"></slot></div>
       <div class="line right"><slot name="line-right"></slot></div>
       <div class="line bottom"><slot name="line-bottom"></slot></div>
@@ -200,8 +218,36 @@ defineExpose({ select, cropper })
     padding: 0;
     box-sizing: border-box;
   }
-  &.moving {
+  &:not(.fixed-image) {
+    cursor: grab;
+  }
+  &.image-moving {
     cursor: grabbing;
+  }
+  &.view-moving {
+    cursor: grabbing;
+    .consoles {
+      cursor: grabbing;
+    }
+  }
+  &:not(.view-resizing) {
+    .consoles {
+      cursor: grab;
+    }
+  }
+  &.view-resizing {
+    &.top-left {
+      cursor: nwse-resize;
+    }
+    &.top-right {
+      cursor: nesw-resize;
+    }
+    &.bottom-left {
+      cursor: nesw-resize;
+    }
+    &.bottom-right {
+      cursor: nwse-resize;
+    }
   }
   &.grid {
     background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQAQMAAAAlPW0iAAAAA3NCSVQICAjb4U/gAAAABlBMVEXMzMz////TjRV2AAAACXBIWXMAAArrAAAK6wGCiw1aAAAAHHRFWHRTb2Z0d2FyZQBBZG9iZSBGaXJld29ya3MgQ1M26LyyjAAAABFJREFUCJlj+M/AgBVhF/0PAH6/D/HkDxOGAAAAAElFTkSuQmCC');
@@ -224,8 +270,8 @@ defineExpose({ select, cropper })
     position: absolute;
     left: 0;
     top: 0;
-    width: 100%;
-    height: 100%;
+    width: 101%;
+    height: 101%;
     background-color: var(--mask-color);
     pointer-events: none;
   }
@@ -249,6 +295,7 @@ defineExpose({ select, cropper })
     left: 0;
     top: 0;
     transform-origin: left top;
+
     .line {
       position: absolute;
       background-color: var(--line-color);
@@ -285,22 +332,22 @@ defineExpose({ select, cropper })
       &.top-left {
         left: calc(0px - var(--point-size));
         top: calc(0px - var(--point-size));
-        cursor: se-resize;
+        cursor: nwse-resize;
       }
       &.top-right {
         right: calc(0px - var(--point-size));
         top: calc(0px - var(--point-size));
-        cursor: sw-resize;
+        cursor: nesw-resize;
       }
       &.bottom-left {
         left: calc(0px - var(--point-size));
         bottom: calc(0px - var(--point-size));
-        cursor: ne-resize;
+        cursor: nesw-resize;
       }
       &.bottom-right {
         right: calc(0px - var(--point-size));
         bottom: calc(0px - var(--point-size));
-        cursor: nw-resize;
+        cursor: nwse-resize;
       }
     }
   }
