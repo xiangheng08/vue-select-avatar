@@ -144,13 +144,159 @@ export const useCheckImageBack = (options: HookOptions) => {
   return { checkImageBack }
 }
 
+export const useCheckViewPosition = (options: HookOptions) => {
+  const { pos, info } = options
+  const checkViewPosition = () => {
+    if (!info.value) return
+
+    if (pos.viewX < pos.imageX) {
+      pos.viewX = pos.imageX
+    }
+
+    if (pos.viewY < pos.imageY) {
+      pos.viewY = pos.imageY
+    }
+
+    if (pos.viewX + pos.viewSize > pos.imageX + pos.imageWidth * pos.imageScale) {
+      pos.viewX = pos.imageX + pos.imageWidth * pos.imageScale - pos.viewSize
+    }
+
+    if (pos.viewY + pos.viewSize > pos.imageY + pos.imageHeight * pos.imageScale) {
+      pos.viewY = pos.imageY + pos.imageHeight * pos.imageScale - pos.viewSize
+    }
+  }
+
+  return { checkViewPosition }
+}
+
+export const useResizeView = (options: HookOptions) => {
+  const { pos, pointPosition, props, info } = options
+
+  const resizeView = (newPos: SimplePosition) => {
+    // 等比例缩放
+    switch (pointPosition.value) {
+      case 'top-left':
+        const dx1 = newPos.x - pos.viewX
+        const dy1 = newPos.y - pos.viewY
+        let n = dx1
+        if (newPos.x >= pos.viewX + dy1 && newPos.x <= pos.viewX + pos.viewSize + dy1) {
+          n = dy1
+        }
+        pos.viewX += n
+        pos.viewY += n
+        pos.viewSize -= n
+        if (pos.viewSize < props.minViewSize!) {
+          pos.viewX += pos.viewSize - props.minViewSize!
+          pos.viewY += pos.viewSize - props.minViewSize!
+          pos.viewSize = props.minViewSize!
+        }
+        if (info.value && pos.viewX < pos.imageX) {
+          pos.viewSize -= pos.imageX - pos.viewX
+          pos.viewY += pos.imageX - pos.viewX
+          pos.viewX = pos.imageX
+        }
+        if (info.value && pos.viewY < pos.imageY) {
+          pos.viewSize -= pos.imageY - pos.viewY
+          pos.viewX += pos.imageY - pos.viewY
+          pos.viewY = pos.imageY
+        }
+        break
+      case 'top-right':
+        const dx2 = newPos.x - (pos.viewX + pos.viewSize)
+        const dy2 = newPos.y - pos.viewY
+        if (newPos.x >= pos.viewX && newPos.x <= pos.viewX + pos.viewSize - dy2) {
+          pos.viewY += dy2
+          pos.viewSize -= dy2
+          if (pos.viewSize < props.minViewSize!) {
+            pos.viewY += pos.viewSize - props.minViewSize!
+            pos.viewSize = props.minViewSize!
+          }
+        } else {
+          pos.viewY -= dx2
+          pos.viewSize += dx2
+          if (pos.viewSize < props.minViewSize!) {
+            pos.viewY += pos.viewSize - props.minViewSize!
+            pos.viewSize = props.minViewSize!
+          }
+        }
+        if (info.value && pos.viewY < pos.imageY) {
+          pos.viewSize -= pos.imageY - pos.viewY
+          pos.viewY = pos.imageY
+        }
+        if (info.value && pos.viewX + pos.viewSize > pos.imageX + pos.imageWidth * pos.imageScale) {
+          pos.viewY -= pos.imageX + pos.imageWidth * pos.imageScale - (pos.viewX + pos.viewSize)
+          pos.viewSize = pos.imageX + pos.imageWidth * pos.imageScale - pos.viewX
+        }
+        break
+      case 'bottom-left':
+        const dx3 = newPos.x - pos.viewX
+        const dy3 = newPos.y - (pos.viewY + pos.viewSize)
+        if (newPos.x >= pos.viewX - dy3 && newPos.x <= pos.viewX - dy3 + (pos.viewSize + dy3)) {
+          pos.viewX -= dy3
+          pos.viewSize += dy3
+          if (pos.viewSize < props.minViewSize!) {
+            pos.viewX = pos.viewX + pos.viewSize - props.minViewSize!
+            pos.viewSize = props.minViewSize!
+          }
+        } else {
+          pos.viewX += dx3
+          pos.viewSize -= dx3
+          if (pos.viewSize < props.minViewSize!) {
+            pos.viewX = pos.viewX + pos.viewSize - props.minViewSize!
+            pos.viewSize = props.minViewSize!
+          }
+        }
+        if (info.value && pos.viewX < pos.imageX) {
+          pos.viewSize -= pos.imageX - pos.viewX
+          pos.viewX = pos.imageX
+        }
+        if (
+          info.value &&
+          pos.viewY + pos.viewSize > pos.imageY + pos.imageHeight * pos.imageScale
+        ) {
+          pos.viewX -= pos.imageY + pos.imageHeight * pos.imageScale - (pos.viewY + pos.viewSize)
+          pos.viewSize = pos.imageY + pos.imageHeight * pos.imageScale - pos.viewY
+        }
+        break
+      case 'bottom-right':
+        const dx4 = newPos.x - (pos.viewX + pos.viewSize)
+        const dy4 = newPos.y - (pos.viewY + pos.viewSize)
+        if (newPos.x >= pos.viewX && newPos.x <= pos.viewX + pos.viewSize + dy4) {
+          pos.viewSize += dy4
+        } else {
+          pos.viewSize += dx4
+        }
+        if (pos.viewSize < props.minViewSize!) {
+          pos.viewSize = props.minViewSize!
+        }
+        if (info.value && pos.viewX + pos.viewSize > pos.imageX + pos.imageWidth * pos.imageScale) {
+          pos.viewSize = pos.imageX + pos.imageWidth * pos.imageScale - pos.viewX
+        }
+        if (
+          info.value &&
+          pos.viewY + pos.viewSize > pos.imageY + pos.imageHeight * pos.imageScale
+        ) {
+          pos.viewSize = pos.imageY + pos.imageHeight * pos.imageScale - pos.viewY
+        }
+        break
+    }
+  }
+
+  return { resizeView }
+}
+
 export const useMouseHandles = (options: HookOptions) => {
   const { imageMoving, viewMoving, viewResizing, info, pos, props, viewportRef, pointPosition } =
     options
 
   const lastPos = ref<SimplePosition>({ x: 0, y: 0 })
+  const startPos = ref<SimplePosition>({ x: 0, y: 0 })
+  const startViewPos = ref<SimplePosition>({ x: 0, y: 0 })
+  const viewportPos = ref<SimplePosition>({ x: 0, y: 0 })
 
   const { checkImageBack } = useCheckImageBack(options)
+  const { resizeView } = useResizeView(options)
+  const { checkViewPosition } = useCheckViewPosition(options)
 
   const handleMouseDown = (e: MouseEvent) => {
     if (!info.value || props.fixedImage) return
@@ -192,6 +338,8 @@ export const useMouseHandles = (options: HookOptions) => {
     pointPosition.value = position
 
     const { left, top } = viewportRef.value.getBoundingClientRect()
+    viewportPos.value.x = left
+    viewportPos.value.y = top
     lastPos.value.x = e.clientX - left
     lastPos.value.y = e.clientY - top
 
@@ -205,57 +353,9 @@ export const useMouseHandles = (options: HookOptions) => {
     e.preventDefault()
     e.stopPropagation()
 
-    const { left, top } = viewportRef.value.getBoundingClientRect()
+    const newPos = { x: e.clientX - viewportPos.value.x, y: e.clientY - viewportPos.value.y }
 
-    const newPos = { x: e.clientX - left, y: e.clientY - top }
-
-    // 等比例缩放
-    switch (pointPosition.value) {
-      case 'top-left':
-        const dx1 = newPos.x - pos.viewX
-        const dy1 = newPos.y - pos.viewY
-        if (newPos.x >= pos.viewX + dy1 && newPos.x <= pos.viewX + pos.viewSize + dy1 * 2) {
-          pos.viewX += dy1
-          pos.viewY += dy1
-          pos.viewSize -= dy1
-        } else {
-          pos.viewX += dx1
-          pos.viewY += dx1
-          pos.viewSize -= dx1
-        }
-        break
-      case 'top-right':
-        const dx2 = newPos.x - (pos.viewX + pos.viewSize)
-        const dy2 = newPos.y - pos.viewY
-        if (newPos.x >= pos.viewX && newPos.x <= pos.viewX + pos.viewSize - dy2) {
-          pos.viewY += dy2
-          pos.viewSize -= dy2
-        } else {
-          pos.viewY -= dx2
-          pos.viewSize += dx2
-        }
-        break
-      case 'bottom-left':
-        const dx3 = newPos.x - pos.viewX
-        const dy3 = newPos.y - (pos.viewY + pos.viewSize)
-        if (newPos.x >= pos.viewX - dy3 && newPos.x <= pos.viewX - dy3 + (pos.viewSize + dy3)) {
-          pos.viewX -= dy3
-          pos.viewSize += dy3
-        } else {
-          pos.viewX += dx3
-          pos.viewSize -= dx3
-        }
-        break
-      case 'bottom-right':
-        const dx4 = newPos.x - (pos.viewX + pos.viewSize)
-        const dy4 = newPos.y - (pos.viewY + pos.viewSize)
-        if (newPos.x >= pos.viewX && newPos.x <= pos.viewX + pos.viewSize + dy4) {
-          pos.viewSize += dy4
-        } else {
-          pos.viewSize += dx4
-        }
-        break
-    }
+    resizeView(newPos)
 
     lastPos.value = newPos
   }
@@ -275,8 +375,10 @@ export const useMouseHandles = (options: HookOptions) => {
 
     viewMoving.value = true
 
-    lastPos.value.x = e.clientX
-    lastPos.value.y = e.clientY
+    startPos.value.x = e.clientX
+    startPos.value.y = e.clientY
+    startViewPos.value.x = pos.viewX
+    startViewPos.value.y = pos.viewY
 
     document.addEventListener('mousemove', handleViewMouseMove)
     document.addEventListener('mouseup', handleViewMouseUp)
@@ -286,11 +388,10 @@ export const useMouseHandles = (options: HookOptions) => {
     e.preventDefault()
     e.stopPropagation()
 
-    pos.viewX += e.clientX - lastPos.value.x
-    pos.viewY += e.clientY - lastPos.value.y
+    pos.viewX = e.clientX - startPos.value.x + startViewPos.value.x
+    pos.viewY = e.clientY - startPos.value.y + startViewPos.value.y
 
-    lastPos.value.x = e.clientX
-    lastPos.value.y = e.clientY
+    checkViewPosition()
   }
 
   const handleViewMouseUp = () => {
@@ -336,7 +437,7 @@ export const useWheelHandles = (options: HookOptions) => {
   const { checkImageBack } = useCheckImageBack(options)
 
   const handleWheel = (e: WheelEvent) => {
-    if (!info.value || imageMoving.value) return
+    if (!info.value || imageMoving.value || props.fixedImage) return
     e.preventDefault()
     e.stopPropagation()
 
@@ -362,14 +463,28 @@ export const useWheelHandles = (options: HookOptions) => {
 }
 
 export const useTouchHandles = (options: HookOptions) => {
-  const { info, imageMoving, pos, minImageScale, viewportRef } = options
+  const {
+    info,
+    imageMoving,
+    pos,
+    minImageScale,
+    viewportRef,
+    pointPosition,
+    viewResizing,
+    props,
+    viewMoving,
+  } = options
 
   const { checkImageBack } = useCheckImageBack(options)
+  const { resizeView } = useResizeView(options)
+  const { checkViewPosition } = useCheckViewPosition(options)
 
   const touchStart = ref<SimplePosition>()
   const touchStartDistance = ref<number>()
   const isTwoFingerZoom = ref(false)
   const touchCenter = ref<SimplePosition>({ x: 0, y: 0 })
+  const viewportPos = ref<SimplePosition>({ x: 0, y: 0 })
+  const startViewPos = ref<SimplePosition>({ x: 0, y: 0 })
   const handleTouchStart = (e: TouchEvent) => {
     if (!info.value) return
 
@@ -487,7 +602,98 @@ export const useTouchHandles = (options: HookOptions) => {
     handleTouchEnd(e)
   }
 
-  return { handleTouchStart }
+  const handlePointTouchStart = (e: TouchEvent, position: PointPosition) => {
+    if (!viewportRef.value) return
+
+    e.preventDefault()
+    e.stopPropagation()
+
+    viewResizing.value = true
+    pointPosition.value = position
+
+    const { left, top } = viewportRef.value.getBoundingClientRect()
+    viewportPos.value.x = left
+    viewportPos.value.y = top
+    touchCenter.value.x = e.touches[0].clientX - left
+    touchCenter.value.y = e.touches[0].clientY - top
+
+    document.addEventListener('touchmove', handlePointTouchMove, { passive: false })
+    document.addEventListener('touchend', handlePointTouchEnd)
+    document.addEventListener('touchcancel', handlePointTouchCancel)
+  }
+
+  const handlePointTouchMove = (e: TouchEvent) => {
+    if (!viewportRef.value) return
+
+    e.preventDefault()
+    e.stopPropagation()
+
+    const newPos = {
+      x: e.touches[0].clientX - viewportPos.value.x,
+      y: e.touches[0].clientX - viewportPos.value.y,
+    }
+
+    resizeView(newPos)
+
+    touchCenter.value = newPos
+  }
+
+  const handlePointTouchEnd = (e: TouchEvent) => {
+    if (e.touches.length > 0) return
+    viewResizing.value = false
+    pointPosition.value = void 0
+    document.removeEventListener('touchmove', handlePointTouchMove)
+    document.removeEventListener('touchend', handlePointTouchEnd)
+    document.removeEventListener('touchcancel', handlePointTouchCancel)
+  }
+
+  const handlePointTouchCancel = (e: TouchEvent) => {
+    handlePointTouchEnd(e)
+  }
+
+  const handleViewTouchStart = (e: TouchEvent) => {
+    if (!props.fixedImage || !viewportRef.value) return
+
+    e.preventDefault()
+    e.stopPropagation()
+
+    viewMoving.value = true
+
+    touchCenter.value.x = e.touches[0].clientX
+    touchCenter.value.y = e.touches[0].clientY
+    startViewPos.value.x = pos.viewX
+    startViewPos.value.y = pos.viewY
+
+    document.addEventListener('touchmove', handleViewTouchMove, { passive: false })
+    document.addEventListener('touchend', handleViewTouchEnd)
+    document.addEventListener('touchcancel', handleViewTouchCancel)
+  }
+
+  const handleViewTouchMove = (e: TouchEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+
+    pos.viewX = e.touches[0].clientX - touchCenter.value.x + startViewPos.value.x
+    pos.viewY = e.touches[0].clientY - touchCenter.value.y + startViewPos.value.y
+
+    checkViewPosition()
+  }
+
+  const handleViewTouchEnd = (e: TouchEvent) => {
+    if (e.touches.length > 0) return
+
+    viewMoving.value = false
+
+    document.removeEventListener('touchmove', handleViewTouchMove)
+    document.removeEventListener('touchend', handleViewTouchEnd)
+    document.removeEventListener('touchcancel', handleViewTouchCancel)
+  }
+
+  const handleViewTouchCancel = (e: TouchEvent) => {
+    handleViewTouchEnd(e)
+  }
+
+  return { handleTouchStart, handlePointTouchStart, handleViewTouchStart }
 }
 
 export const useImageInfo = () => {
@@ -515,18 +721,22 @@ export const useInitPosition = (options: HookOptions) => {
 
   let first = true
 
-  watchEffect(() => {
-    pos.viewportWidth = props.size ?? props.width ?? 0
-    pos.viewportHeight = props.size ?? props.height ?? 0
-    pos.viewSize = props.viewSize ?? 0
+  watch(
+    () => props,
+    () => {
+      pos.viewportWidth = props.size ?? props.width ?? 0
+      pos.viewportHeight = props.size ?? props.height ?? 0
 
-    if (!props.fixedImage || first) {
-      pos.viewX = (pos.viewportWidth - pos.viewSize) / 2
-      pos.viewY = (pos.viewportHeight - pos.viewSize) / 2
-    }
+      if (!props.fixedImage || first) {
+        pos.viewSize = props.viewSize ?? 0
+        pos.viewX = (pos.viewportWidth - pos.viewSize) / 2
+        pos.viewY = (pos.viewportHeight - pos.viewSize) / 2
+      }
 
-    first = false
-  })
+      first = false
+    },
+    { deep: true, immediate: true },
+  )
 
   watch(
     () => props.fixedImage,
@@ -551,6 +761,9 @@ export const useInitPosition = (options: HookOptions) => {
           : pos.viewportHeight / res.height
       pos.imageX = (pos.viewportWidth - res.width * pos.imageScale) / 2
       pos.imageY = (pos.viewportHeight - res.height * pos.imageScale) / 2
+      pos.viewSize = Math.min(pos.imageWidth, pos.imageHeight) * pos.imageScale
+      pos.viewX = (pos.viewportWidth - pos.viewSize) / 2
+      pos.viewY = (pos.viewportHeight - pos.viewSize) / 2
     } else {
       pos.imageScale = Math.max(pos.viewSize / res.width, pos.viewSize / res.height)
       pos.imageX = (pos.viewportWidth - res.width * pos.imageScale) / 2

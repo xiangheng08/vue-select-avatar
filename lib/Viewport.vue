@@ -69,7 +69,8 @@ const { viewportStyle, maskStyle, viewStyle, imageStyle, innerImageStyle } = use
 const { initPosition } = useInitPosition(hookOptions)
 const { handleMouseDown, handlePointMouseDown, handleViewMouseDown } = useMouseHandles(hookOptions)
 const { handleWheel } = useWheelHandles(hookOptions)
-const { handleTouchStart } = useTouchHandles(hookOptions)
+const { handleTouchStart, handlePointTouchStart, handleViewTouchStart } =
+  useTouchHandles(hookOptions)
 
 const select = async (options?: ImageSelectOptions) => {
   const res = await selectImage(options)
@@ -117,21 +118,43 @@ defineExpose({ select, cropper })
     <div class="view" :style="viewStyle" v-if="src && !isClipPathSupported">
       <img class="inner-image" :src="src" alt="inner-image" :style="innerImageStyle" />
     </div>
-    <div class="consoles" :style="viewStyle" v-if="fixedImage" @mousedown="handleViewMouseDown">
+    <div
+      class="consoles"
+      :style="viewStyle"
+      v-if="fixedImage"
+      @mousedown="handleViewMouseDown"
+      @touchstart="handleViewTouchStart"
+    >
       <div class="line top"><slot name="line-top"></slot></div>
       <div class="line right"><slot name="line-right"></slot></div>
       <div class="line bottom"><slot name="line-bottom"></slot></div>
       <div class="line left"><slot name="line-left"></slot></div>
-      <div class="point top-left" @mousedown="handlePointMouseDown($event, 'top-left')">
+      <div
+        class="point top-left"
+        @mousedown="handlePointMouseDown($event, 'top-left')"
+        @touchstart="handlePointTouchStart($event, 'top-left')"
+      >
         <slot name="point-top-left"></slot>
       </div>
-      <div class="point top-right" @mousedown="handlePointMouseDown($event, 'top-right')">
+      <div
+        class="point top-right"
+        @mousedown="handlePointMouseDown($event, 'top-right')"
+        @touchstart="handlePointTouchStart($event, 'top-right')"
+      >
         <slot name="point-top-right"></slot>
       </div>
-      <div class="point bottom-left" @mousedown="handlePointMouseDown($event, 'bottom-left')">
+      <div
+        class="point bottom-left"
+        @mousedown="handlePointMouseDown($event, 'bottom-left')"
+        @touchstart="handlePointTouchStart($event, 'bottom-left')"
+      >
         <slot name="point-bottom-left"></slot>
       </div>
-      <div class="point bottom-right" @mousedown="handlePointMouseDown($event, 'bottom-right')">
+      <div
+        class="point bottom-right"
+        @mousedown="handlePointMouseDown($event, 'bottom-right')"
+        @touchstart="handlePointTouchStart($event, 'bottom-right')"
+      >
         <slot name="point-bottom-right"></slot>
       </div>
     </div>
