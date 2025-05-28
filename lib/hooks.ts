@@ -757,8 +757,8 @@ export const useInitPosition = (options: HookOptions) => {
     if (props.fixedImage) {
       pos.imageScale =
         Math.abs(res.width - pos.viewportWidth) > Math.abs(res.height - pos.viewportHeight)
-          ? pos.viewportWidth / res.width
-          : pos.viewportHeight / res.height
+          ? (pos.viewportWidth - props.imagePadding! * 2) / res.width
+          : (pos.viewportHeight - props.imagePadding! * 2) / res.height
       pos.imageX = (pos.viewportWidth - res.width * pos.imageScale) / 2
       pos.imageY = (pos.viewportHeight - res.height * pos.imageScale) / 2
       pos.viewSize = Math.min(pos.imageWidth, pos.imageHeight) * pos.imageScale

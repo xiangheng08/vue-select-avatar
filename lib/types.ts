@@ -55,6 +55,10 @@ export interface ViewportProps {
    * 最小观察窗口尺寸
    */
   minViewSize?: number
+  /**
+   * 图片边距
+   */
+  imagePadding?: number
 }
 
 export interface ImageSelectOptions {

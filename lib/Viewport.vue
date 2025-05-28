@@ -25,6 +25,7 @@ const props = withDefaults(defineProps<ViewportProps>(), {
   wheelReverse: false,
   fixedImage: false,
   minViewSize: 10,
+  imagePadding: 10,
 })
 
 const pos = reactive(getDefaultPosition())

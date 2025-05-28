@@ -4,6 +4,7 @@ import { formatBytes } from './utils/common'
 import {
   loadImage,
   Viewport,
+  accept,
   type CropperOptions,
   type ImageSelectOptions,
   type ViewportProps,
@@ -20,19 +21,25 @@ const viewportProps = reactive<ViewportProps>({
   wheelReverse: false,
   fixedImage: false,
   minViewSize: 10,
+  imagePadding: 10,
 })
-const selectOptions: ImageSelectOptions = {
-  maxFileSize: 10 * 1024 * 1024,
-  compress: true,
-  quality: 0.5,
-}
-const cropperOptions: CropperOptions = {
-  size: 180,
-  type: 'image/webp',
-}
+const selectOptions = reactive<ImageSelectOptions>({
+  accept,
+  maxFileSize: 20 * 1024 * 1024,
+  maxSize: 5000,
+  resizeToMax: false,
+  compress: false,
+  quality: 0.8,
+})
+const cropperOptions = reactive<CropperOptions>({
+  format: 'file',
+  type: 'image/png',
+  quality: 1,
+})
 
 const src = ref('')
 const imageInfoText = ref('')
+const compressType = ref(0)
 
 const handleSelect = async () => {
   viewportRef.value?.select(selectOptions)
@@ -51,6 +58,10 @@ const handleCropper = async () => {
     src.value = URL.createObjectURL(file)
     const image = await loadImage(src.value)
     imageInfoText.value = `${image.width}x${image.height} ${size}`
+  } else if (typeof file === 'string') {
+    src.value = file
+    const image = await loadImage(src.value)
+    imageInfoText.value = `${image.width}x${image.height} ${formatBytes(file.length)}`
   }
 }
 </script>
@@ -60,8 +71,8 @@ const handleCropper = async () => {
   <button @click="handleSelect">选择图片</button>
   <button @click="handleCropper">截取</button>
   <el-collapse style="width: 100%">
-    <el-collapse-item title="配置">
-      <span>props</span>
+    <el-collapse-item title="配置" style="padding: 0 20px">
+      <div style="font-size: 16px; margin-bottom: 6px">props</div>
       <el-form inline>
         <el-form-item label="size">
           <el-input-number v-model="viewportProps.size" :min="0" />
@@ -105,11 +116,75 @@ const handleCropper = async () => {
         <el-form-item label="minViewSize">
           <el-input-number v-model="viewportProps.minViewSize" :min="0" />
         </el-form-item>
+        <el-form-item label="imagePadding">
+          <el-input-number v-model="viewportProps.imagePadding" :min="0" />
+        </el-form-item>
+      </el-form>
+      <div style="font-size: 16px; margin-bottom: 6px; margin-top: 30px">ImageSelectOptions</div>
+      <el-form inline>
+        <el-form-item label="accept">
+          <el-input v-model="selectOptions.accept" />
+        </el-form-item>
+        <el-form-item label="maxFileSize">
+          <el-input-number v-model="selectOptions.maxFileSize" :min="0" />
+        </el-form-item>
+        <el-form-item label="minSize">
+          <el-input-number v-model="selectOptions.minSize" :min="0" />
+        </el-form-item>
+        <el-form-item label="maxSize">
+          <el-input-number v-model="selectOptions.maxSize" :min="0" />
+        </el-form-item>
+        <el-form-item label="resizeToMax">
+          <el-radio-group v-model="selectOptions.resizeToMax">
+            <el-radio :value="true">true</el-radio>
+            <el-radio :value="false">false</el-radio>
+          </el-radio-group>
+        </el-form-item>
+        <el-form-item label="compress">
+          <el-radio-group v-model="compressType">
+            <el-radio :value="0">boolean</el-radio>
+            <el-radio :value="1">number</el-radio>
+          </el-radio-group>
+          <div style="width: 10px"></div>
+          <el-input-number v-model="selectOptions.compress" :min="0" v-if="compressType === 1" />
+          <el-radio-group v-model="selectOptions.compress" v-if="compressType === 0">
+            <el-radio :value="true">true</el-radio>
+            <el-radio :value="false">false</el-radio>
+          </el-radio-group>
+        </el-form-item>
+        <el-form-item label="quality">
+          <el-input-number v-model="selectOptions.quality" :min="0" :precision="2" />
+        </el-form-item>
+      </el-form>
+      <div style="font-size: 16px; margin-bottom: 6px; margin-top: 30px">CropperOptions</div>
+      <el-form inline>
+        <el-form-item label="format">
+          <el-select v-model="cropperOptions.format" style="width: 240px">
+            <el-option label="file" value="file" />
+            <el-option label="base64" value="base64" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="size">
+          <el-input-number v-model="cropperOptions.size" :min="0" />
+        </el-form-item>
+        <el-form-item label="type">
+          <el-select v-model="cropperOptions.type" style="width: 240px">
+            <el-option label="image/jpeg" value="image/jpeg" />
+            <el-option label="image/png" value="image/png" />
+            <el-option label="image/webp" value="image/webp" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="quality">
+          <el-input-number v-model="cropperOptions.quality" :min="0" :precision="2" />
+        </el-form-item>
+        <el-form-item label="filename">
+          <el-input v-model="cropperOptions.filename" clearable />
+        </el-form-item>
       </el-form>
     </el-collapse-item>
   </el-collapse>
-  <div style="display: flex; flex-direction: column; align-items: center">
-    <span style="font-size: 12px; margin-bottom: 4px">{{ imageInfoText }}</span>
+  <div style="display: flex; flex-direction: column; align-self: flex-start; padding: 0 20px">
+    <span style="font-size: 12px; margin: 0 0 4px 0">{{ imageInfoText }}</span>
     <img :src="src" alt="" />
   </div>
 </template>
