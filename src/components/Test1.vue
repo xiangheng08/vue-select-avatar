@@ -35,6 +35,7 @@ const selectOptions = reactive<ImageSelectOptions>({
 })
 const cropperOptions = reactive<CropperOptions>({
   format: 'file',
+  useOriginSize: true,
   type: 'image/png',
   quality: 1,
 })
@@ -66,6 +67,8 @@ const handleCropper = async () => {
     imageInfoText.value = `${image.width}x${image.height} ${formatBytes(file.length)}`
   }
 }
+
+const fn = (n?: unknown) => (typeof n === 'number' ? formatBytes(n) : '')
 </script>
 
 <template>
@@ -140,7 +143,9 @@ const handleCropper = async () => {
           <el-input v-model="selectOptions.accept" />
         </el-form-item>
         <el-form-item label="maxFileSize">
-          <el-input-number v-model="selectOptions.maxFileSize" :min="0" />
+          <el-input-number v-model="selectOptions.maxFileSize" :min="0" />{{
+            fn(selectOptions.maxFileSize)
+          }}
         </el-form-item>
         <el-form-item label="minSize">
           <el-input-number v-model="selectOptions.minSize" :min="0" />
@@ -179,7 +184,16 @@ const handleCropper = async () => {
           </el-select>
         </el-form-item>
         <el-form-item label="size">
-          <el-input-number v-model="cropperOptions.size" :min="0" />
+          <el-input-number v-model="cropperOptions.size" :min="0" clearable />
+        </el-form-item>
+        <el-form-item label="maxSize">
+          <el-input-number v-model="cropperOptions.maxSize" :min="0" clearable />
+        </el-form-item>
+        <el-form-item label="useOriginSize">
+          <el-radio-group v-model="cropperOptions.useOriginSize">
+            <el-radio :value="true">true</el-radio>
+            <el-radio :value="false">false</el-radio>
+          </el-radio-group>
         </el-form-item>
         <el-form-item label="type">
           <el-select v-model="cropperOptions.type" style="width: 240px">

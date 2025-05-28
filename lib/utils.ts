@@ -215,7 +215,15 @@ const blobToBase64 = (blob: Blob) => {
 }
 
 export const cropper = async (info: ImageInfo, pos: Position, options?: CropperOptions) => {
-  const { format = 'file', size, type = 'image/png', quality = 1, filename } = options || {}
+  const {
+    format = 'file',
+    size,
+    type = 'image/png',
+    quality = 1,
+    filename,
+    maxSize,
+    useOriginSize = true,
+  } = options || {}
 
   let url = info.url
   let needRevoke = false
@@ -235,10 +243,20 @@ export const cropper = async (info: ImageInfo, pos: Position, options?: CropperO
 
   if (!ctx) throw new Error('Canvas context is null')
 
-  const s = size || pos.viewSize / pos.imageScale
+  let s = pos.viewSize / pos.imageScale
   const x = (pos.viewX - pos.imageX) / pos.imageScale
   const y = (pos.viewY - pos.imageY) / pos.imageScale
   const l = pos.viewSize / pos.imageScale
+
+  if (typeof size === 'number') {
+    if (s > size || !useOriginSize) {
+      s = size
+    }
+  } else if (typeof maxSize === 'number') {
+    if (s > maxSize) {
+      s = maxSize
+    }
+  }
 
   canvas.width = s
   canvas.height = s

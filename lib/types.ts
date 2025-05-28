@@ -67,6 +67,10 @@ export interface ViewportProps {
    * wasd 键移动
    */
   wasdKey?: boolean
+  /**
+   * 尺寸是否显示 // TODO 待实现
+   */
+  showSize?: boolean
 }
 
 export interface ImageSelectOptions {
@@ -134,6 +138,16 @@ export interface CropperOptions {
    * 输出图片尺寸
    */
   size?: number
+  /**
+   * 最大输出图片尺寸（如果截取图片尺寸超过该值则等比例缩放到该尺寸，如果设置了 size，该属性则无效）
+   */
+  maxSize?: number
+  /**
+   * 如果截取图片尺寸小于 size 时，则使用截取图片的尺寸
+   * （如果还是使用 size 作为图片尺寸，则会将图片等比例放大，会造成文件大小变大）
+   * （仅在设置了 size 时生效）
+   */
+  useOriginSize?: boolean
   /**
    * 输出图片类型
    */
