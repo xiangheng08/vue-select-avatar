@@ -420,9 +420,9 @@ export const useWheelHandles = (options: HookOptions) => {
 
   const getStep = (deltaY = -1) => {
     let _step = step.value
-    if (pressShift.value) {
+    if (props.shiftScaleStep! > 0 && pressShift.value) {
       _step = shiftStep.value
-    } else if (pressCtrl.value) {
+    } else if (props.ctrlScaleStep! > 0 && pressCtrl.value) {
       _step = ctrlStep.value
     }
     if (deltaY > 0) {
@@ -776,4 +776,106 @@ export const useInitPosition = (options: HookOptions) => {
   }
 
   return { initPosition }
+}
+
+export const useKeyMove = (options: HookOptions) => {
+  const { props, pos, info } = options
+
+  const { checkImageBack } = useCheckImageBack(options)
+  const { checkViewPosition } = useCheckViewPosition(options)
+
+  const handleKeyDown = (e: KeyboardEvent) => {
+    if (props.fixedImage) {
+      if (props.directionKey) {
+        switch (e.key) {
+          case 'ArrowUp':
+            pos.viewY -= 1
+            break
+          case 'ArrowRight':
+            pos.viewX += 1
+            break
+          case 'ArrowDown':
+            pos.viewY += 1
+            break
+          case 'ArrowLeft':
+            pos.viewX -= 1
+            break
+        }
+      }
+      if (props.wasdKey) {
+        switch (e.key) {
+          case 'w':
+            pos.viewY -= 1
+            break
+          case 'd':
+            pos.viewX += 1
+            break
+          case 's':
+            pos.viewY += 1
+            break
+          case 'a':
+            pos.viewX -= 1
+            break
+        }
+      }
+      checkViewPosition()
+    } else {
+      if (!info.value) return
+      if (props.directionKey) {
+        switch (e.key) {
+          case 'ArrowUp':
+            pos.imageY -= 1
+            break
+          case 'ArrowRight':
+            pos.imageX += 1
+            break
+          case 'ArrowDown':
+            pos.imageY += 1
+            break
+          case 'ArrowLeft':
+            pos.imageX -= 1
+            break
+        }
+      }
+      if (props.wasdKey) {
+        switch (e.key) {
+          case 'w':
+            pos.imageY -= 1
+            break
+          case 'd':
+            pos.imageX += 1
+            break
+          case 's':
+            pos.imageY += 1
+            break
+          case 'a':
+            pos.imageX -= 1
+            break
+        }
+      }
+      checkImageBack()
+    }
+  }
+
+  let last: boolean | undefined
+
+  watch(
+    [() => props.wasdKey, () => props.directionKey],
+    () => {
+      const bool = props.wasdKey || props.directionKey
+      if (bool !== last) {
+        last = bool
+        if (bool) {
+          document.addEventListener('keydown', handleKeyDown)
+        } else {
+          document.removeEventListener('keydown', handleKeyDown)
+        }
+      }
+    },
+    { immediate: true },
+  )
+
+  onUnmounted(() => {
+    document.removeEventListener('keydown', handleKeyDown)
+  })
 }

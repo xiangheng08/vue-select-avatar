@@ -6,6 +6,7 @@ import {
   useBacking,
   useImageInfo,
   useInitPosition,
+  useKeyMove,
   useMouseHandles,
   usePressKey,
   useStyles,
@@ -26,6 +27,8 @@ const props = withDefaults(defineProps<ViewportProps>(), {
   fixedImage: false,
   minViewSize: 10,
   imagePadding: 10,
+  directionKey: true,
+  wasdKey: true,
 })
 
 const pos = reactive(getDefaultPosition())
@@ -72,7 +75,7 @@ const { handleMouseDown, handlePointMouseDown, handleViewMouseDown } = useMouseH
 const { handleWheel } = useWheelHandles(hookOptions)
 const { handleTouchStart, handlePointTouchStart, handleViewTouchStart } =
   useTouchHandles(hookOptions)
-
+useKeyMove(hookOptions)
 const select = async (options?: ImageSelectOptions) => {
   const res = await selectImage(options)
   initPosition(res)
@@ -167,9 +170,11 @@ defineExpose({ select, cropper })
   --line-color: #fff;
   --point-size: 10px;
   --mask-color: rgba(0, 0, 0, 0.5);
+  --bg-color: #000;
 
   position: relative;
   overflow: hidden;
+  background-color: var(--bg-color);
   &,
   *,
   *::before,

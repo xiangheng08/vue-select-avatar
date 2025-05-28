@@ -36,11 +36,11 @@ export interface ViewportProps {
    */
   scaleStep?: number
   /**
-   * 缩放步长（按下Ctrl键时）
+   * 缩放步长（按下Ctrl键时）（设置为0时，则不生效）
    */
   ctrlScaleStep?: number
   /**
-   * 缩放步长（按下Shift键时）
+   * 缩放步长（按下Shift键时）（设置为0时，则不生效）
    */
   shiftScaleStep?: number
   /**
@@ -59,6 +59,14 @@ export interface ViewportProps {
    * 图片边距
    */
   imagePadding?: number
+  /**
+   * 方向键移动
+   */
+  directionKey?: boolean
+  /**
+   * wasd 键移动
+   */
+  wasdKey?: boolean
 }
 
 export interface ImageSelectOptions {

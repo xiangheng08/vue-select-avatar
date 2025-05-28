@@ -22,6 +22,8 @@ const viewportProps = reactive<ViewportProps>({
   fixedImage: false,
   minViewSize: 10,
   imagePadding: 10,
+  directionKey: true,
+  wasdKey: true,
 })
 const selectOptions = reactive<ImageSelectOptions>({
   accept,
@@ -118,6 +120,18 @@ const handleCropper = async () => {
         </el-form-item>
         <el-form-item label="imagePadding">
           <el-input-number v-model="viewportProps.imagePadding" :min="0" />
+        </el-form-item>
+        <el-form-item label="directionKey">
+          <el-radio-group v-model="viewportProps.directionKey">
+            <el-radio :value="true">true</el-radio>
+            <el-radio :value="false">false</el-radio>
+          </el-radio-group>
+        </el-form-item>
+        <el-form-item label="wasdKey">
+          <el-radio-group v-model="viewportProps.wasdKey">
+            <el-radio :value="true">true</el-radio>
+            <el-radio :value="false">false</el-radio>
+          </el-radio-group>
         </el-form-item>
       </el-form>
       <div style="font-size: 16px; margin-bottom: 6px; margin-top: 30px">ImageSelectOptions</div>
