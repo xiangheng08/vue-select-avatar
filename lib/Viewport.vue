@@ -183,15 +183,15 @@ defineExpose({ select, cropper })
   &.image-moving {
     cursor: grabbing;
   }
+  &:not(.view-resizing) {
+    .consoles {
+      cursor: grab;
+    }
+  }
   &.view-moving {
     cursor: grabbing;
     .consoles {
       cursor: grabbing;
-    }
-  }
-  &:not(.view-resizing) {
-    .consoles {
-      cursor: grab;
     }
   }
   &.view-resizing {
