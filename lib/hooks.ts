@@ -113,7 +113,7 @@ export const useCheckImageBack = (options: HookOptions) => {
 
   // 检查图片是否需要回正位置
   const checkImageBack = (transition = true) => {
-    if (!info.value || !props.fixedImage) return
+    if (!info.value || props.fixedImage) return
 
     const imageWidth = pos.imageWidth * pos.imageScale
     const imageHeight = pos.imageHeight * pos.imageScale

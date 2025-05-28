@@ -102,6 +102,9 @@ const handleCropper = async () => {
             <el-radio :value="false">false</el-radio>
           </el-radio-group>
         </el-form-item>
+        <el-form-item label="minViewSize">
+          <el-input-number v-model="viewportProps.minViewSize" :min="0" />
+        </el-form-item>
       </el-form>
     </el-collapse-item>
   </el-collapse>
