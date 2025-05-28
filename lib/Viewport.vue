@@ -11,6 +11,7 @@ import {
   useStyles,
   useTouchHandles,
   useWheelHandles,
+  type HookOptions,
 } from './hooks'
 import type { CropperOptions, ImageSelectOptions, PointPosition, ViewportProps } from './types'
 
@@ -44,96 +45,31 @@ const pointPosition = ref<PointPosition>()
 
 const { backing, handleTransitionEnd } = useBacking({ imageMoving })
 
-const { viewportStyle, maskStyle, viewStyle, imageStyle, innerImageStyle } = useStyles(pos)
-
-// 检查图片是否需要回正位置
-const checkImageBack = (transition = true) => {
-  if (!info.value || !props.fixedImage) return
-
-  const imageWidth = pos.imageWidth * pos.imageScale
-  const imageHeight = pos.imageHeight * pos.imageScale
-
-  // 修正 x 轴边界
-  let newX = pos.imageX
-  if (newX > pos.viewX) {
-    newX = pos.viewX
-  } else if (newX < pos.viewX + pos.viewSize - imageWidth) {
-    newX = pos.viewX + pos.viewSize - imageWidth
-  }
-
-  // 修正 y 轴边界
-  let newY = pos.imageY
-  if (newY > pos.viewY) {
-    newY = pos.viewY
-  } else if (newY < pos.viewY + pos.viewSize - imageHeight) {
-    newY = pos.viewY + pos.viewSize - imageHeight
-  }
-
-  if (newX !== pos.imageX || newY !== pos.imageY) {
-    pos.imageX = newX
-    pos.imageY = newY
-    backing.value = transition
-  }
-}
-
-const getStep = (deltaY = -1) => {
-  let _step = step.value
-  if (pressShift.value) {
-    _step = shiftStep.value
-  } else if (pressCtrl.value) {
-    _step = ctrlStep.value
-  }
-  if (deltaY > 0) {
-    _step = -_step
-  }
-  if (props.wheelReverse) {
-    _step = -_step
-  }
-  return _step
-}
-
-const { initPosition } = useInitPosition({
+const hookOptions: HookOptions = {
   props,
   pos,
   info,
+  imageMoving,
+  viewMoving,
+  viewResizing,
+  viewportRef,
   minImageScale,
   step,
   ctrlStep,
   shiftStep,
-})
-
-const { handleMouseDown, handlePointMouseDown, handleViewMouseDown } = useMouseHandles({
-  imageMoving,
-  viewMoving,
-  viewResizing,
-  checkImageBack,
-  info,
-  pos,
-  props,
-  viewportRef,
+  pressCtrl,
+  pressShift,
+  isClipPathSupported,
   pointPosition,
-})
+  backing,
+}
 
-const { handleWheel } = useWheelHandles({
-  imageMoving,
-  checkImageBack,
-  info,
-  pos,
-  viewportRef,
-  minImageScale,
-  getStep,
-  props,
-})
+const { viewportStyle, maskStyle, viewStyle, imageStyle, innerImageStyle } = useStyles(hookOptions)
 
-const { handleTouchStart } = useTouchHandles({
-  info,
-  imageMoving,
-  pos,
-  minImageScale,
-  viewportRef,
-  checkImageBack,
-  props,
-})
+const { initPosition } = useInitPosition(hookOptions)
+const { handleMouseDown, handlePointMouseDown, handleViewMouseDown } = useMouseHandles(hookOptions)
+const { handleWheel } = useWheelHandles(hookOptions)
+const { handleTouchStart } = useTouchHandles(hookOptions)
 
 const select = async (options?: ImageSelectOptions) => {
   const res = await selectImage(options)

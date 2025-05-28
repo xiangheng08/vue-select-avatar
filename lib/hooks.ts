@@ -9,8 +9,27 @@ import type {
   ViewportProps,
 } from './types'
 
+export interface HookOptions {
+  props: ViewportProps
+  pos: Reactive<Position>
+  info: Ref<ImageInfo | undefined>
+  imageMoving: Ref<boolean, boolean>
+  viewMoving: Ref<boolean, boolean>
+  viewResizing: Ref<boolean, boolean>
+  viewportRef: Ref<HTMLElement | undefined>
+  minImageScale: Ref<number>
+  step: Ref<number>
+  ctrlStep: Ref<number>
+  shiftStep: Ref<number>
+  pressCtrl: Ref<boolean>
+  pressShift: Ref<boolean>
+  isClipPathSupported: Ref<boolean>
+  pointPosition: Ref<PointPosition | undefined>
+  backing: Ref<boolean>
+}
+
 export const useStyles = (
-  pos: Position,
+  options: HookOptions,
 ): {
   viewportStyle: CSSProperties
   maskStyle: CSSProperties
@@ -18,6 +37,8 @@ export const useStyles = (
   imageStyle: CSSProperties
   innerImageStyle: CSSProperties
 } => {
+  const { pos } = options
+
   const viewportStyle = reactive<CSSProperties>({})
   const maskStyle = reactive<CSSProperties>({})
   const viewStyle = reactive<CSSProperties>({})
@@ -40,6 +61,28 @@ export const useStyles = (
   })
 
   return { viewportStyle, maskStyle, viewStyle, imageStyle, innerImageStyle }
+}
+
+interface BackingOptions {
+  imageMoving: Ref<boolean>
+}
+export const useBacking = (options: BackingOptions) => {
+  const { imageMoving } = options
+
+  const backing = ref(false)
+
+  const handleTransitionEnd = () => {
+    backing.value = false
+  }
+
+  watch(imageMoving, (val) => {
+    if (val) {
+      // 开始移动时，停止回弹
+      backing.value = false
+    }
+  })
+
+  return { backing, handleTransitionEnd }
 }
 
 export const usePressKey = (key: string) => {
@@ -65,32 +108,49 @@ export const usePressKey = (key: string) => {
   return press
 }
 
-interface MouseHandlesOptions {
-  imageMoving: Ref<boolean>
-  viewMoving: Ref<boolean>
-  viewResizing: Ref<boolean>
-  checkImageBack: (transition?: boolean) => void
-  info: Ref<ImageInfo | undefined>
-  pos: Reactive<Position>
-  props: Reactive<ViewportProps>
-  viewportRef: Ref<HTMLElement | undefined>
-  pointPosition: Ref<PointPosition | undefined>
+export const useCheckImageBack = (options: HookOptions) => {
+  const { props, info, pos, backing } = options
+
+  // 检查图片是否需要回正位置
+  const checkImageBack = (transition = true) => {
+    if (!info.value || !props.fixedImage) return
+
+    const imageWidth = pos.imageWidth * pos.imageScale
+    const imageHeight = pos.imageHeight * pos.imageScale
+
+    // 修正 x 轴边界
+    let newX = pos.imageX
+    if (newX > pos.viewX) {
+      newX = pos.viewX
+    } else if (newX < pos.viewX + pos.viewSize - imageWidth) {
+      newX = pos.viewX + pos.viewSize - imageWidth
+    }
+
+    // 修正 y 轴边界
+    let newY = pos.imageY
+    if (newY > pos.viewY) {
+      newY = pos.viewY
+    } else if (newY < pos.viewY + pos.viewSize - imageHeight) {
+      newY = pos.viewY + pos.viewSize - imageHeight
+    }
+
+    if (newX !== pos.imageX || newY !== pos.imageY) {
+      pos.imageX = newX
+      pos.imageY = newY
+      backing.value = transition
+    }
+  }
+
+  return { checkImageBack }
 }
 
-export const useMouseHandles = (options: MouseHandlesOptions) => {
-  const {
-    imageMoving,
-    viewMoving,
-    viewResizing,
-    checkImageBack,
-    info,
-    pos,
-    props,
-    viewportRef,
-    pointPosition,
-  } = options
+export const useMouseHandles = (options: HookOptions) => {
+  const { imageMoving, viewMoving, viewResizing, info, pos, props, viewportRef, pointPosition } =
+    options
 
   const lastPos = ref<SimplePosition>({ x: 0, y: 0 })
+
+  const { checkImageBack } = useCheckImageBack(options)
 
   const handleMouseDown = (e: MouseEvent) => {
     if (!info.value || props.fixedImage) return
@@ -242,19 +302,38 @@ export const useMouseHandles = (options: MouseHandlesOptions) => {
   return { handleMouseDown, handlePointMouseDown, handleViewMouseDown }
 }
 
-interface WheelHandlesOptions {
-  imageMoving: Ref<boolean>
-  checkImageBack: (transition?: boolean) => void
-  info: Ref<ImageInfo | undefined>
-  pos: Reactive<Position>
-  viewportRef: Ref<HTMLElement | undefined>
-  minImageScale: Ref<number>
-  getStep: (deltaY?: number) => number
-  props: Reactive<ViewportProps>
-}
+export const useWheelHandles = (options: HookOptions) => {
+  const {
+    props,
+    imageMoving,
+    pos,
+    viewportRef,
+    info,
+    minImageScale,
+    pressCtrl,
+    pressShift,
+    step,
+    ctrlStep,
+    shiftStep,
+  } = options
 
-export const useWheelHandles = (options: WheelHandlesOptions) => {
-  const { imageMoving, pos, viewportRef, info, checkImageBack, minImageScale, getStep } = options
+  const getStep = (deltaY = -1) => {
+    let _step = step.value
+    if (pressShift.value) {
+      _step = shiftStep.value
+    } else if (pressCtrl.value) {
+      _step = ctrlStep.value
+    }
+    if (deltaY > 0) {
+      _step = -_step
+    }
+    if (props.wheelReverse) {
+      _step = -_step
+    }
+    return _step
+  }
+
+  const { checkImageBack } = useCheckImageBack(options)
 
   const handleWheel = (e: WheelEvent) => {
     if (!info.value || imageMoving.value) return
@@ -282,18 +361,10 @@ export const useWheelHandles = (options: WheelHandlesOptions) => {
   return { handleWheel }
 }
 
-interface TouchHandlesOptions {
-  info: Ref<ImageInfo | undefined>
-  imageMoving: Ref<boolean>
-  pos: Reactive<Position>
-  minImageScale: Ref<number>
-  viewportRef: Ref<HTMLElement | undefined>
-  checkImageBack: (transition?: boolean) => void
-  props: Reactive<ViewportProps>
-}
+export const useTouchHandles = (options: HookOptions) => {
+  const { info, imageMoving, pos, minImageScale, viewportRef } = options
 
-export const useTouchHandles = (options: TouchHandlesOptions) => {
-  const { info, imageMoving, pos, minImageScale, viewportRef, checkImageBack } = options
+  const { checkImageBack } = useCheckImageBack(options)
 
   const touchStart = ref<SimplePosition>()
   const touchStartDistance = ref<number>()
@@ -419,28 +490,6 @@ export const useTouchHandles = (options: TouchHandlesOptions) => {
   return { handleTouchStart }
 }
 
-interface BackingOptions {
-  imageMoving: Ref<boolean>
-}
-export const useBacking = (options: BackingOptions) => {
-  const { imageMoving } = options
-
-  const backing = ref(false)
-
-  const handleTransitionEnd = () => {
-    backing.value = false
-  }
-
-  watch(imageMoving, (val) => {
-    if (val) {
-      // 开始移动时，停止回弹
-      backing.value = false
-    }
-  })
-
-  return { backing, handleTransitionEnd }
-}
-
 export const useImageInfo = () => {
   const info = ref<ImageInfo>()
   let lastUrl: string | undefined
@@ -461,17 +510,7 @@ export const useImageInfo = () => {
   return info
 }
 
-interface InitPositionOptions {
-  props: Reactive<ViewportProps>
-  pos: Reactive<Position>
-  info: Ref<ImageInfo | undefined>
-  minImageScale: Ref<number, number>
-  step: Ref<number, number>
-  ctrlStep: Ref<number, number>
-  shiftStep: Ref<number, number>
-}
-
-export const useInitPosition = (options: InitPositionOptions) => {
+export const useInitPosition = (options: HookOptions) => {
   const { props, pos, info, minImageScale, step, ctrlStep, shiftStep } = options
 
   let first = true
