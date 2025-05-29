@@ -86,7 +86,7 @@ const cropper = async (options?: CropperOptions) => {
   return cropperFn(info.value, pos, options)
 }
 
-defineExpose({ select, cropper })
+defineExpose({ select, cropper, initPosition })
 </script>
 
 <template>

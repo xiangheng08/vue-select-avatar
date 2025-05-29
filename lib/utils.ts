@@ -85,12 +85,15 @@ export const selectImage = async (options?: ImageSelectOptions): Promise<ImageSe
     }
   }
 
-  // 压缩处理
   if (shouldCompress(file, compress)) {
-    file = await compressImage(file, quality, dimensions)
+    // 压缩处理
+    file = await compressImage(file, quality, dimensions, 'image/png')
   } else if (resizeToMax) {
     // 仅缩放不压缩
-    file = await resizeImage(file, dimensions)
+    file = await resizeImage(file, dimensions, 'image/png')
+  } else if (file.type !== 'image/png') {
+    // 如果不是 png，则转换成 png，确保输出的图片格式是 png
+    file = await resizeImage(file, dimensions, 'image/png')
   }
 
   return { file, ...dimensions }
@@ -116,7 +119,11 @@ const shouldCompress = (file: File, compress: boolean | number) => {
   return !!compress
 }
 
-export const resizeImage = async (file: File, dimensions: ImageDimensions): Promise<File> => {
+export const resizeImage = async (
+  file: File,
+  dimensions: ImageDimensions,
+  type?: string,
+): Promise<File> => {
   return new Promise((resolve, reject) => {
     const img = new Image()
     img.onload = () => {
@@ -126,7 +133,7 @@ export const resizeImage = async (file: File, dimensions: ImageDimensions): Prom
       const ctx = canvas.getContext('2d')!
       ctx.drawImage(img, 0, 0, dimensions.width, dimensions.height)
       canvas.toBlob((blob) => {
-        resolve(new File([blob!], file.name, { type: file.type }))
+        resolve(new File([blob!], file.name, { type: type || file.type }))
         URL.revokeObjectURL(img.src)
       }, file.type)
     }
@@ -142,6 +149,7 @@ export const compressImage = async (
   file: File,
   quality: number,
   dimensions: ImageDimensions,
+  type?: string,
 ): Promise<File> => {
   return new Promise((resolve, reject) => {
     const img = new Image()
@@ -153,7 +161,7 @@ export const compressImage = async (
       ctx.drawImage(img, 0, 0, dimensions.width, dimensions.height)
       canvas.toBlob(
         (blob) => {
-          resolve(new File([blob!], file.name, { type: file.type }))
+          resolve(new File([blob!], file.name, { type: type || file.type }))
           URL.revokeObjectURL(img.src)
         },
         file.type,
@@ -197,7 +205,7 @@ export const canvasToBlob = (canvas: HTMLCanvasElement, type?: string, quality?:
   })
 }
 
-const blobToBase64 = (blob: Blob) => {
+export const blobToBase64 = (blob: Blob) => {
   return new Promise<string>((resolve, reject) => {
     const reader = new FileReader()
     reader.onload = () => {
@@ -223,6 +231,7 @@ export const cropper = async (info: ImageInfo, pos: Position, options?: CropperO
     filename,
     maxSize,
     useOriginSize = true,
+    backgroundColor = '#ffffff',
   } = options || {}
 
   let url = info.url
@@ -260,6 +269,11 @@ export const cropper = async (info: ImageInfo, pos: Position, options?: CropperO
 
   canvas.width = s
   canvas.height = s
+
+  if (type === 'image/jpeg' && backgroundColor) {
+    ctx.fillStyle = backgroundColor
+    ctx.fillRect(0, 0, s, s)
+  }
 
   ctx.drawImage(image, x, y, l, l, 0, 0, s, s)
 

@@ -160,6 +160,10 @@ export interface CropperOptions {
    * 文件名
    */
   filename?: string
+  /**
+   * 当输出图片类型为 image/jpeg 的底色
+   */
+  backgroundColor?: string
 }
 
 export type PointPosition = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right'
