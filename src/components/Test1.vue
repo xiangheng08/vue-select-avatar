@@ -70,6 +70,42 @@ const handleCropper = async () => {
 }
 
 const fn = (n?: unknown) => (typeof n === 'number' ? formatBytes(n) : '')
+
+const defaultViewportProps = JSON.stringify(viewportProps)
+const defaultSelectOptions = JSON.stringify(selectOptions)
+const defaultCropperOptions = JSON.stringify(cropperOptions)
+
+const handleSave = () => {
+  localStorage.setItem('viewportProps', JSON.stringify(viewportProps))
+  localStorage.setItem('selectOptions', JSON.stringify(selectOptions))
+  localStorage.setItem('cropperOptions', JSON.stringify(cropperOptions))
+}
+const handleReset = () => {
+  Object.assign(viewportProps, JSON.parse(defaultViewportProps))
+  Object.assign(selectOptions, JSON.parse(defaultSelectOptions))
+  Object.assign(cropperOptions, JSON.parse(defaultCropperOptions))
+}
+try {
+  const data = JSON.parse(localStorage.getItem('viewportProps') || '{}')
+  Object.assign(viewportProps, data)
+} catch (error) {
+  console.error(error)
+  localStorage.removeItem('viewportProps')
+}
+try {
+  const data = JSON.parse(localStorage.getItem('selectOptions') || '{}')
+  Object.assign(selectOptions, data)
+} catch (error) {
+  console.error(error)
+  localStorage.removeItem('selectOptions')
+}
+try {
+  const data = JSON.parse(localStorage.getItem('cropperOptions') || '{}')
+  Object.assign(cropperOptions, data)
+} catch (error) {
+  console.error(error)
+  localStorage.removeItem('cropperOptions')
+}
 </script>
 
 <template>
@@ -78,6 +114,11 @@ const fn = (n?: unknown) => (typeof n === 'number' ? formatBytes(n) : '')
   <button @click="handleCropper">截取</button>
   <el-collapse style="width: 100%">
     <el-collapse-item title="配置" style="padding: 0 20px">
+      <template #title>
+        <span style="margin-right: 12px">配置</span>
+        <el-button @click.stop="handleSave">保存配置</el-button>
+        <el-button @click.stop="handleReset">还原配置</el-button>
+      </template>
       <div style="font-size: 16px; margin-bottom: 6px">props</div>
       <el-form inline>
         <el-form-item label="size">

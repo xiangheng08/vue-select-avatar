@@ -129,10 +129,10 @@ defineExpose({ select, cropper, initPosition })
       @mousedown="handleViewMouseDown"
       @touchstart="handleViewTouchStart"
     >
-      <div class="line top"><slot name="line-top"></slot></div>
-      <div class="line right"><slot name="line-right"></slot></div>
-      <div class="line bottom"><slot name="line-bottom"></slot></div>
-      <div class="line left"><slot name="line-left"></slot></div>
+      <div class="line top"></div>
+      <div class="line right"></div>
+      <div class="line bottom"></div>
+      <div class="line left"></div>
       <div
         class="point top-left"
         @mousedown="handlePointMouseDown($event, 'top-left')"
