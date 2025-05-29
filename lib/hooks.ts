@@ -522,7 +522,7 @@ export const useTouchHandles = (options: HookOptions) => {
     e.preventDefault()
     e.stopPropagation()
 
-    if (e.touches.length === 1 && !isTwoFingerZoom.value) {
+    if (!isTwoFingerZoom.value) {
       // 单指移动
       const touch = e.touches[0]
       if (touchStart.value) {
