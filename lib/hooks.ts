@@ -724,8 +724,8 @@ export const useInitPosition = (options: HookOptions) => {
   watch(
     () => props,
     () => {
-      pos.viewportWidth = props.size ?? props.width ?? 0
-      pos.viewportHeight = props.size ?? props.height ?? 0
+      pos.viewportWidth = props.width ?? props.size ?? 0
+      pos.viewportHeight = props.height ?? props.size ?? 0
 
       if (!props.fixedImage || first) {
         pos.viewSize = props.viewSize ?? 0
