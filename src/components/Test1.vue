@@ -238,6 +238,6 @@ const fn = (n?: unknown) => (typeof n === 'number' ? formatBytes(n) : '')
   </el-collapse>
   <div style="display: flex; flex-direction: column; align-self: flex-start; padding: 0 20px 20px">
     <span style="font-size: 12px; margin: 0 0 4px 0">{{ imageInfoText }}</span>
-    <img :src="src" alt="" />
+    <img :src="src" alt="" style="width: fit-content" />
   </div>
 </template>
