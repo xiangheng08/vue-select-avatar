@@ -26,6 +26,7 @@ export interface HookOptions {
   isClipPathSupported: Ref<boolean>
   pointPosition: Ref<PointPosition | undefined>
   backing: Ref<boolean>
+  elEmitter: HTMLElement
 }
 
 export const useStyles = (
@@ -717,7 +718,7 @@ export const useImageInfo = () => {
 }
 
 export const useInitPosition = (options: HookOptions) => {
-  const { props, pos, info, minImageScale, step, ctrlStep, shiftStep } = options
+  const { props, pos, info, minImageScale, step, ctrlStep, shiftStep, elEmitter } = options
 
   let first = true
 
@@ -751,6 +752,8 @@ export const useInitPosition = (options: HookOptions) => {
     info.value = res
     info.value.url = URL.createObjectURL(res.file)
 
+    elEmitter.dispatchEvent(new CustomEvent('broadcast:info', { detail: { ...info.value } }))
+
     pos.imageWidth = res.width
     pos.imageHeight = res.height
 
@@ -774,6 +777,10 @@ export const useInitPosition = (options: HookOptions) => {
       shiftStep.value = minImageScale.value * (props.shiftScaleStep! / pos.viewSize)
     }
   }
+
+  watchEffect(() =>
+    elEmitter.dispatchEvent(new CustomEvent('broadcast:pos', { detail: { ...pos } })),
+  )
 
   return { initPosition }
 }

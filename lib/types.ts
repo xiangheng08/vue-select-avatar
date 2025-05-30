@@ -1,3 +1,5 @@
+import type Viewport from './Viewport.vue'
+
 /**
  * 位置信息
  */
@@ -167,3 +169,8 @@ export interface CropperOptions {
 }
 
 export type PointPosition = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right'
+
+export interface PreviewProps {
+  size?: number
+  viewportRef?: InstanceType<typeof Viewport>
+}

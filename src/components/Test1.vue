@@ -4,10 +4,12 @@ import { formatBytes } from './utils/common'
 import {
   loadImage,
   Viewport,
+  Preview,
   accept,
   type CropperOptions,
   type ImageSelectOptions,
   type ViewportProps,
+  type PreviewProps,
 } from '../../lib'
 
 const viewportRef = ref<InstanceType<typeof Viewport>>()
@@ -39,6 +41,9 @@ const cropperOptions = reactive<CropperOptions>({
   type: 'image/png',
   quality: 1,
   backgroundColor: '#ffffff',
+})
+const previewProps = reactive<PreviewProps>({
+  size: 180,
 })
 
 const src = ref('')
@@ -74,16 +79,19 @@ const fn = (n?: unknown) => (typeof n === 'number' ? formatBytes(n) : '')
 const defaultViewportProps = JSON.stringify(viewportProps)
 const defaultSelectOptions = JSON.stringify(selectOptions)
 const defaultCropperOptions = JSON.stringify(cropperOptions)
+const defaultPreviewProps = JSON.stringify(previewProps)
 
 const handleSave = () => {
   localStorage.setItem('viewportProps', JSON.stringify(viewportProps))
   localStorage.setItem('selectOptions', JSON.stringify(selectOptions))
   localStorage.setItem('cropperOptions', JSON.stringify(cropperOptions))
+  localStorage.setItem('previewProps', JSON.stringify(previewProps))
 }
 const handleReset = () => {
   Object.assign(viewportProps, JSON.parse(defaultViewportProps))
   Object.assign(selectOptions, JSON.parse(defaultSelectOptions))
   Object.assign(cropperOptions, JSON.parse(defaultCropperOptions))
+  Object.assign(previewProps, JSON.parse(defaultPreviewProps))
 }
 try {
   const data = JSON.parse(localStorage.getItem('viewportProps') || '{}')
@@ -106,10 +114,18 @@ try {
   console.error(error)
   localStorage.removeItem('cropperOptions')
 }
+try {
+  const data = JSON.parse(localStorage.getItem('previewProps') || '{}')
+  Object.assign(previewProps, data)
+} catch (error) {
+  console.error(error)
+  localStorage.removeItem('previewProps')
+}
 </script>
 
 <template>
   <Viewport ref="viewportRef" v-bind="viewportProps" />
+  <Preview :viewport-ref="viewportRef" v-bind="previewProps" />
   <button @click="handleSelect">选择图片</button>
   <button @click="handleCropper">截取</button>
   <el-collapse style="width: 100%">
@@ -275,6 +291,12 @@ try {
           />
         </el-form-item>
       </el-form>
+      <div style="font-size: 16px; margin-bottom: 6px; margin-top: 30px">Preview Props</div>
+      <el-form inline>
+        <el-form-item label="size">
+          <el-input-number v-model="previewProps.size" :min="0" clearable />
+        </el-form-item>
+      </el-form>
     </el-collapse-item>
   </el-collapse>
   <div style="display: flex; flex-direction: column; align-self: flex-start; padding: 0 20px 20px">
@@ -282,3 +304,9 @@ try {
     <img :src="src" alt="" style="width: fit-content" />
   </div>
 </template>
+
+<style lang="scss">
+.preview {
+  border: 1px solid yellow;
+}
+</style>

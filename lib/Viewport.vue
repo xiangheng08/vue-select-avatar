@@ -49,6 +49,8 @@ const pointPosition = ref<PointPosition>()
 
 const { backing, handleTransitionEnd } = useBacking({ imageMoving })
 
+const elEmitter = document.createElement('div')
+
 const hookOptions: HookOptions = {
   props,
   pos,
@@ -66,6 +68,7 @@ const hookOptions: HookOptions = {
   isClipPathSupported,
   pointPosition,
   backing,
+  elEmitter,
 }
 
 const { viewportStyle, maskStyle, viewStyle, imageStyle, innerImageStyle } = useStyles(hookOptions)
@@ -86,7 +89,7 @@ const cropper = async (options?: CropperOptions) => {
   return cropperFn(info.value, pos, options)
 }
 
-defineExpose({ select, cropper, initPosition })
+defineExpose({ select, cropper, initPosition, elEmitter, backing })
 </script>
 
 <template>
