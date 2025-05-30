@@ -56,7 +56,7 @@ onUnmounted(removes)
 </script>
 
 <template>
-  <div class="preview" :style="style" :class="{ backing }">
+  <div class="preview" :style="style" :class="{ backing, round }">
     <img class="image" :src="info.url" alt="image" :style="imageStyle" v-if="info?.url" />
   </div>
 </template>
@@ -70,11 +70,15 @@ onUnmounted(removes)
       transition: transform 0.3s ease;
     }
   }
+  &.round {
+    border-radius: 50%;
+  }
   .image {
     position: absolute;
     left: 0;
     top: 0;
     transform-origin: left top;
+    max-width: unset;
   }
 }
 </style>

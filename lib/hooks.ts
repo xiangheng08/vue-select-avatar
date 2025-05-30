@@ -37,6 +37,7 @@ export const useStyles = (
   viewStyle: CSSProperties
   imageStyle: CSSProperties
   innerImageStyle: CSSProperties
+  consolesStyle: CSSProperties
 } => {
   const { pos } = options
 
@@ -45,6 +46,7 @@ export const useStyles = (
   const viewStyle = reactive<CSSProperties>({})
   const imageStyle = reactive<CSSProperties>({})
   const innerImageStyle = reactive<CSSProperties>({})
+  const consolesStyle = reactive<CSSProperties>({})
 
   watchEffect(() => {
     viewportStyle.width = `${pos.viewportWidth}px`
@@ -59,9 +61,12 @@ export const useStyles = (
     innerImageStyle.width = `${pos.imageWidth}px`
     innerImageStyle.height = `${pos.imageHeight}px`
     innerImageStyle.transform = `translate3d(${pos.imageX - pos.viewX}px, ${pos.imageY - pos.viewY}px, 0px) scale(${pos.imageScale})`
+    consolesStyle.width = `${pos.viewSize + 2}px`
+    consolesStyle.height = `${pos.viewSize + 2}px`
+    consolesStyle.transform = `translate3d(${pos.viewX - 1}px, ${pos.viewY - 1}px, 0px)`
   })
 
-  return { viewportStyle, maskStyle, viewStyle, imageStyle, innerImageStyle }
+  return { viewportStyle, maskStyle, viewStyle, imageStyle, innerImageStyle, consolesStyle }
 }
 
 interface BackingOptions {

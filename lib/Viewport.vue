@@ -71,7 +71,8 @@ const hookOptions: HookOptions = {
   elEmitter,
 }
 
-const { viewportStyle, maskStyle, viewStyle, imageStyle, innerImageStyle } = useStyles(hookOptions)
+const { viewportStyle, maskStyle, viewStyle, imageStyle, innerImageStyle, consolesStyle } =
+  useStyles(hookOptions)
 
 const { initPosition } = useInitPosition(hookOptions)
 const { handleMouseDown, handlePointMouseDown, handleViewMouseDown } = useMouseHandles(hookOptions)
@@ -127,15 +128,11 @@ defineExpose({ select, cropper, initPosition, elEmitter, backing })
     </div>
     <div
       class="consoles"
-      :style="viewStyle"
+      :style="consolesStyle"
       v-if="fixedImage"
       @mousedown="handleViewMouseDown"
       @touchstart="handleViewTouchStart"
     >
-      <div class="line top"></div>
-      <div class="line right"></div>
-      <div class="line bottom"></div>
-      <div class="line left"></div>
       <div
         class="point top-left"
         @mousedown="handlePointMouseDown($event, 'top-left')"
@@ -265,35 +262,8 @@ defineExpose({ select, cropper, initPosition, elEmitter, backing })
     left: 0;
     top: 0;
     transform-origin: left top;
+    border: 1px solid var(--line-color);
 
-    .line {
-      position: absolute;
-      background-color: var(--line-color);
-      &.top {
-        left: -1px;
-        top: -1px;
-        width: calc(100% + 2px);
-        height: 1px;
-      }
-      &.right {
-        right: -1px;
-        top: -1px;
-        width: 1px;
-        height: calc(100% + 2px);
-      }
-      &.bottom {
-        left: -1px;
-        bottom: -1px;
-        width: calc(100% + 2px);
-        height: 1px;
-      }
-      &.left {
-        left: -1px;
-        top: -1px;
-        width: 1px;
-        height: calc(100% + 2px);
-      }
-    }
     .point {
       position: absolute;
       width: var(--point-size);

@@ -25,6 +25,7 @@ export default defineConfig({
   vite: {
     server: {
       port: 4578,
+      host: '0.0.0.0',
     },
     plugins: [
       // @ts-ignore vitepress 所依赖的 vite 与本项目的 vite 版本不兼容，但是可用，所以忽略

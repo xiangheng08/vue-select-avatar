@@ -6,6 +6,7 @@ import './style.css'
 import 'virtual:group-icons.css'
 
 import ExampleHome1 from './components/example-home1.vue'
+import ExampleHome2 from './components/example-home2.vue'
 
 export default {
   extends: DefaultTheme,
@@ -16,5 +17,6 @@ export default {
   },
   enhanceApp({ app }) {
     app.component('ExampleHome1', ExampleHome1)
+    app.component('ExampleHome2', ExampleHome2)
   },
 } satisfies Theme

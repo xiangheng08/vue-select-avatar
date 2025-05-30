@@ -173,4 +173,5 @@ export type PointPosition = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-r
 export interface PreviewProps {
   size?: number
   viewportRef?: InstanceType<typeof Viewport>
+  round?: boolean
 }
