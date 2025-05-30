@@ -31,5 +31,12 @@ export default defineConfig({
       // @ts-ignore vitepress 所依赖的 vite 与本项目的 vite 版本不兼容，但是可用，所以忽略
       groupIconVitePlugin(),
     ],
+    css: {
+      preprocessorOptions: {
+        scss: {
+          api: 'modern-compiler',
+        },
+      },
+    },
   },
 })

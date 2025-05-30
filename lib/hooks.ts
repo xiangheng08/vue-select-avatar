@@ -492,7 +492,7 @@ export const useTouchHandles = (options: HookOptions) => {
   const viewportPos = ref<SimplePosition>({ x: 0, y: 0 })
   const startViewPos = ref<SimplePosition>({ x: 0, y: 0 })
   const handleTouchStart = (e: TouchEvent) => {
-    if (!info.value) return
+    if (!info.value || props.fixedImage) return
 
     e.preventDefault()
     e.stopPropagation()
