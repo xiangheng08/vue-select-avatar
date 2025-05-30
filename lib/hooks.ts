@@ -636,7 +636,7 @@ export const useTouchHandles = (options: HookOptions) => {
 
     const newPos = {
       x: e.touches[0].clientX - viewportPos.value.x,
-      y: e.touches[0].clientX - viewportPos.value.y,
+      y: e.touches[0].clientY - viewportPos.value.y,
     }
 
     resizeView(newPos)
