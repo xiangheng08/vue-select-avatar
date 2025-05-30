@@ -10,9 +10,9 @@ hero:
     - theme: brand
       text: 快速开始
       link: /guide
-    - theme: alt
-      text: 安装
-      link: /install
+  image:
+    src: /demo.gif
+    alt: demo
 
 features:
   - title: Feature A
@@ -42,3 +42,5 @@ yarn add vue-select-avatar
 :::
 
 ## 快速体验
+
+<ExampleHome1 />

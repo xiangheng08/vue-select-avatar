@@ -5,6 +5,8 @@ import DefaultTheme from 'vitepress/theme'
 import './style.css'
 import 'virtual:group-icons.css'
 
+import ExampleHome1 from './components/example-home1.vue'
+
 export default {
   extends: DefaultTheme,
   Layout: () => {
@@ -12,7 +14,7 @@ export default {
       // https://vitepress.dev/guide/extending-default-theme#layout-slots
     })
   },
-  enhanceApp() {
-    // ...
+  enhanceApp({ app }) {
+    app.component('ExampleHome1', ExampleHome1)
   },
 } satisfies Theme

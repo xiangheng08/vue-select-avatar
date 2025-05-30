@@ -233,6 +233,7 @@ defineExpose({ select, cropper, initPosition, elEmitter, backing })
     transform-origin: left top;
     pointer-events: none;
     user-select: none;
+    max-width: unset;
   }
   .mask {
     position: absolute;
@@ -257,6 +258,7 @@ defineExpose({ select, cropper, initPosition, elEmitter, backing })
     transform-origin: left top;
     pointer-events: none;
     user-select: none;
+    max-width: unset;
   }
   .consoles {
     position: absolute;
