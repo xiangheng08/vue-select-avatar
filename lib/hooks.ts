@@ -1,3 +1,4 @@
+import { getPointOffset } from './utils'
 import { watchEffect, reactive, ref, onMounted, onUnmounted, watch } from 'vue'
 import type { CSSProperties, Reactive, Ref } from 'vue'
 import type {
@@ -299,6 +300,7 @@ export const useMouseHandles = (options: HookOptions) => {
   const startPos = ref<SimplePosition>({ x: 0, y: 0 })
   const startViewPos = ref<SimplePosition>({ x: 0, y: 0 })
   const viewportPos = ref<SimplePosition>({ x: 0, y: 0 })
+  const pointOffset = ref<SimplePosition>({ x: 0, y: 0 })
 
   const { checkImageBack } = useCheckImageBack(options)
   const { resizeView } = useResizeView(options)
@@ -349,6 +351,10 @@ export const useMouseHandles = (options: HookOptions) => {
     lastPos.value.x = e.clientX - left
     lastPos.value.y = e.clientY - top
 
+    pointOffset.value = getPointOffset(lastPos.value, pos, position)
+    lastPos.value.x -= pointOffset.value.x
+    lastPos.value.y -= pointOffset.value.y
+
     document.addEventListener('mousemove', handlePointMouseMove)
     document.addEventListener('mouseup', handlePointMouseUp)
   }
@@ -360,6 +366,8 @@ export const useMouseHandles = (options: HookOptions) => {
     e.stopPropagation()
 
     const newPos = { x: e.clientX - viewportPos.value.x, y: e.clientY - viewportPos.value.y }
+    newPos.x -= pointOffset.value.x
+    newPos.y -= pointOffset.value.y
 
     resizeView(newPos)
 
@@ -491,6 +499,7 @@ export const useTouchHandles = (options: HookOptions) => {
   const touchCenter = ref<SimplePosition>({ x: 0, y: 0 })
   const viewportPos = ref<SimplePosition>({ x: 0, y: 0 })
   const startViewPos = ref<SimplePosition>({ x: 0, y: 0 })
+  const pointOffset = ref<SimplePosition>({ x: 0, y: 0 })
   const handleTouchStart = (e: TouchEvent) => {
     if (!info.value || props.fixedImage) return
 
@@ -623,6 +632,10 @@ export const useTouchHandles = (options: HookOptions) => {
     touchCenter.value.x = e.touches[0].clientX - left
     touchCenter.value.y = e.touches[0].clientY - top
 
+    pointOffset.value = getPointOffset(touchCenter.value, pos, position)
+    touchCenter.value.x -= pointOffset.value.x
+    touchCenter.value.y -= pointOffset.value.y
+
     document.addEventListener('touchmove', handlePointTouchMove, { passive: false })
     document.addEventListener('touchend', handlePointTouchEnd)
     document.addEventListener('touchcancel', handlePointTouchCancel)
@@ -638,6 +651,9 @@ export const useTouchHandles = (options: HookOptions) => {
       x: e.touches[0].clientX - viewportPos.value.x,
       y: e.touches[0].clientY - viewportPos.value.y,
     }
+
+    newPos.x -= pointOffset.value.x
+    newPos.y -= pointOffset.value.y
 
     resizeView(newPos)
 

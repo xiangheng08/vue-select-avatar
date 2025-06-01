@@ -4,7 +4,9 @@ import type {
   ImageInfo,
   ImageSelectOptions,
   ImageSelectResult,
+  PointPosition,
   Position,
+  SimplePosition,
 } from './types'
 
 export interface SelectFileOptions {
@@ -289,4 +291,27 @@ export const cropper = async (info: ImageInfo, pos: Position, options?: CropperO
 export const getIsClipPathSupported = () => {
   const element = document.createElement('div')
   return 'clipPath' in element.style
+}
+
+export const getPointOffset = (value: SimplePosition, pos: Position, position: PointPosition) => {
+  const v: SimplePosition = { x: 0, y: 0 }
+  switch (position) {
+    case 'top-left':
+      v.x += value.x - pos.viewX
+      v.y += value.y - pos.viewY
+      break
+    case 'top-right':
+      v.x += value.x - (pos.viewX + pos.viewSize)
+      v.y += value.y - pos.viewY
+      break
+    case 'bottom-left':
+      v.x += value.x - pos.viewX
+      v.y += value.y - (pos.viewY + pos.viewSize)
+      break
+    case 'bottom-right':
+      v.x += value.x - (pos.viewX + pos.viewSize)
+      v.y += value.y - (pos.viewY + pos.viewSize)
+      break
+  }
+  return v
 }
