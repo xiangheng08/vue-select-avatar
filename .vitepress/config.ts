@@ -11,9 +11,13 @@ export default defineConfig({
     nav: [
       { text: '首页', link: '/' },
       { text: '快速开始', link: '/guide' },
+      { text: 'OPTIONS', link: '/options' },
     ],
 
-    sidebar: [{ text: '快速开始', link: '/guide' }],
+    sidebar: [
+      { text: '快速开始', link: '/guide' },
+      { text: 'OPTIONS', link: '/options' },
+    ],
 
     socialLinks: [{ icon: 'github', link: 'https://github.com/vuejs/vitepress' }],
   },

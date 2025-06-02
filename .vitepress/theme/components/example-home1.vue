@@ -1,6 +1,8 @@
 <script setup lang="ts">
+import 'vue-select-avatar/style.css'
+import { Viewport } from 'vue-select-avatar'
+
 import { onMounted, ref } from 'vue'
-import { Viewport } from '../../../lib'
 import { loadCatImage } from '../utils/image'
 import { formatBytes } from '../utils/format'
 

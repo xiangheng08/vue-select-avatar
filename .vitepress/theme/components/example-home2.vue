@@ -1,7 +1,9 @@
 <script setup lang="ts">
+import 'vue-select-avatar/style.css'
+import { Viewport, Preview } from 'vue-select-avatar'
+
 import { onMounted, ref } from 'vue'
 import { loadCatImage } from '../utils/image'
-import { Viewport, Preview } from '../../../lib'
 
 const viewportRef = ref<InstanceType<typeof Viewport>>()
 
