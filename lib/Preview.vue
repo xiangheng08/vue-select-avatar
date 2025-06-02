@@ -15,6 +15,7 @@ const style = computed(() => {
   return {
     width: `${props.size}px`,
     height: `${props.size}px`,
+    '--bg': props.bg,
   }
 })
 
@@ -65,6 +66,7 @@ onUnmounted(removes)
 .preview {
   overflow: hidden;
   position: relative;
+  background: var(--bg);
   &.backing {
     .image {
       transition: transform 0.3s ease;

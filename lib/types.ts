@@ -174,4 +174,5 @@ export interface PreviewProps {
   size?: number
   viewportRef?: InstanceType<typeof Viewport>
   round?: boolean
+  bg?: string
 }

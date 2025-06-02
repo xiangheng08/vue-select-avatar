@@ -10,6 +10,9 @@ hero:
     - theme: brand
       text: 快速开始
       link: /guide
+    - theme: alt
+      text: OPTIONS
+      link: /options
   image:
     src: /demo.gif
     alt: demo
