@@ -11,11 +11,13 @@ export default defineConfig({
     nav: [
       { text: '首页', link: '/' },
       { text: '快速开始', link: '/guide' },
+      { text: '快速使用', link: '/usage' },
       { text: 'OPTIONS', link: '/options' },
     ],
 
     sidebar: [
       { text: '快速开始', link: '/guide' },
+      { text: '快速使用', link: '/usage' },
       { text: 'OPTIONS', link: '/options' },
     ],
 

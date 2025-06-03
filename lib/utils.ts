@@ -61,7 +61,12 @@ export const selectImage = async (options?: ImageSelectOptions): Promise<ImageSe
   // 选择文件
   let [file] = await selectFile({ accept: acceptType })
 
-  // 文件大小验证
+  // 非图片校验
+  if (!file.type.startsWith('image/')) {
+    throw new Error('NOT_IMAGE')
+  }
+
+  // 文件大小校验
   if (file.size > maxFileSize) {
     throw new Error('FILE_SIZE_EXCEEDED')
   }
@@ -69,7 +74,7 @@ export const selectImage = async (options?: ImageSelectOptions): Promise<ImageSe
   // 获取原始尺寸
   let dimensions = await getImageDimensions(file)
 
-  // 最小尺寸验证
+  // 最小尺寸校验
   if (typeof minSize === 'number' && Math.min(dimensions.width, dimensions.height) < minSize) {
     throw new Error('IMAGE_TOO_SMALL')
   }

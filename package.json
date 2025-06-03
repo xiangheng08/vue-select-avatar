@@ -28,18 +28,19 @@
   "files": [
     "dist"
   ],
-  "main": "./dist/umd.cjs",
+  "main": "./dist/umd.js",
   "module": "./dist/es.js",
   "exports": {
     ".": {
       "import": "./dist/es.js",
-      "require": "./dist/umd.cjs"
+      "require": "./dist/umd.js"
     },
     "./style.css": "./dist/vue-select-avatar.css"
   },
   "scripts": {
     "dev": "vite",
     "build": "run-p type-check \"build-only {@}\" --",
+    "postbuild": "node ./scripts/postbuild.js",
     "preview": "vite preview",
     "test:unit": "vitest",
     "build-only": "vite build",
