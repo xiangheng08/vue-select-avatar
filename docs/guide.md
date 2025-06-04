@@ -92,3 +92,7 @@ Viewport Exposes
 | `select`       | 同 `import { selectImage } from 'vue-select-avatar'` | `import('vue-select-avatar')['selectImage']`                   |
 | `cropper`      | 同 `import { cropper } from 'vue-select-avatar'`     | `import('vue-select-avatar')['cropper']`                       |
 | `initPosition` | 初始化位置                                           | `(res: { file: File, width: number, height: number }) => void` |
+
+Preview Exposes
+
+暂无
