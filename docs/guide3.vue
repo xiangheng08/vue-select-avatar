@@ -62,7 +62,7 @@ const formatBytes = (bytes: number, decimals = 2) => {
       <button @click="handleSelect">选择图片</button>
       <button @click="handleCropper">截取</button>
     </div>
-    <Viewport ref="viewportRef" grid />
+    <Viewport ref="viewportRef" grid fixed-image />
   </div>
   <template v-if="src">
     <div style="font-size: 13px">{{ `${size}x${size} ${formatBytes(fileSize)}` }}</div>

@@ -26,6 +26,10 @@ export interface ViewportProps {
   width?: number
   height?: number
   /**
+   * 图片信息
+   */
+  info?: ImageInfo
+  /**
    * 观察窗口大小
    */
   viewSize?: number

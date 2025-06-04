@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import 'vue-select-avatar/style.css' // 引入样式
-import { Viewport /* ... */ } from 'vue-select-avatar' // 引入组件/函数等
+import { Viewport, Preview } from 'vue-select-avatar' // 引入组件/函数等
 
 import { ref } from 'vue'
 import { ElMessage } from 'element-plus'
@@ -57,12 +57,15 @@ const formatBytes = (bytes: number, decimals = 2) => {
 </script>
 
 <template>
-  <div style="width: fit-content">
-    <div style="display: flex; justify-content: space-between">
-      <button @click="handleSelect">选择图片</button>
-      <button @click="handleCropper">截取</button>
+  <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap">
+    <div style="width: fit-content">
+      <div style="display: flex; justify-content: space-between">
+        <button @click="handleSelect">选择图片</button>
+        <button @click="handleCropper">截取</button>
+      </div>
+      <Viewport ref="viewportRef" grid />
     </div>
-    <Viewport ref="viewportRef" grid />
+    <Preview :viewport-ref="viewportRef" bg="#252526" />
   </div>
   <template v-if="src">
     <div style="font-size: 13px">{{ `${size}x${size} ${formatBytes(fileSize)}` }}</div>

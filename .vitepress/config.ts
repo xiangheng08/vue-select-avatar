@@ -1,5 +1,6 @@
 import { defineConfig } from 'vitepress'
 import { groupIconMdPlugin, groupIconVitePlugin } from 'vitepress-plugin-group-icons'
+import ElementPlus from 'unplugin-element-plus/vite'
 
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
@@ -22,7 +23,11 @@ export default defineConfig({
     ],
 
     socialLinks: [{ icon: 'github', link: 'https://github.com/vuejs/vitepress' }],
+    outline: {
+      level: [2, 4],
+    },
   },
+  cleanUrls: true,
   markdown: {
     config(md) {
       md.use(groupIconMdPlugin)
@@ -36,6 +41,8 @@ export default defineConfig({
     plugins: [
       // @ts-ignore vitepress 所依赖的 vite 与本项目的 vite 版本不兼容，但是可用，所以忽略
       groupIconVitePlugin(),
+      // @ts-ignore
+      ElementPlus(),
     ],
     css: {
       preprocessorOptions: {

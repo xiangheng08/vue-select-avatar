@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { getDefaultPosition } from './data'
-import { computed, reactive, ref } from 'vue'
+import { computed, onMounted, reactive, ref } from 'vue'
 import { cropper as cropperFn, getIsClipPathSupported, selectImage } from './utils'
 import {
   useBacking,
@@ -89,6 +89,12 @@ const cropper = async (options?: CropperOptions) => {
   if (!info.value) throw new Error('Please select an image first')
   return cropperFn(info.value, pos, options)
 }
+
+onMounted(() => {
+  if (props.info) {
+    initPosition(props.info)
+  }
+})
 
 defineExpose({ select, cropper, initPosition, elEmitter, backing })
 </script>

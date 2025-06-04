@@ -2,22 +2,23 @@
 
 ## Viewport Props
 
-| 属性             | 说明                               | 类型      | 默认值  |
-| ---------------- | ---------------------------------- | --------- | ------- |
-| `size`           | 视口尺寸                           | `number`  | `300`   |
-| `width`          | 视口宽度（覆盖`size`）             | `number`  | -       |
-| `height`         | 视口高度（覆盖`size`）             | `number`  | -       |
-| `viewSize`       | 观察窗口大小                       | `number`  | `180`   |
-| `grid`           | 是否为网格背景                     | `boolean` | `false` |
-| `scaleStep`      | 缩放步长，单位px                   | `number`  | `10`    |
-| `ctrlScaleStep`  | Ctrl键缩放步长，单位px（0时禁用）  | `number`  | `5`     |
-| `shiftScaleStep` | Shift键缩放步长，单位px（0时禁用） | `number`  | `1`     |
-| `wheelReverse`   | 滚轮反向                           | `boolean` | `false` |
-| `fixedImage`     | 图片固定模式                       | `boolean` | `false` |
-| `minViewSize`    | 最小观察窗口尺寸                   | `number`  | `10`    |
-| `imagePadding`   | 图片边距                           | `number`  | `10`    |
-| `directionKey`   | 方向键移动                         | `boolean` | `true`  |
-| `wasdKey`        | WASD键移动                         | `boolean` | `true`  |
+| 属性             | 说明                               | 类型                                            | 默认值  |
+| ---------------- | ---------------------------------- | ----------------------------------------------- | ------- |
+| `size`           | 视口尺寸                           | `number`                                        | `300`   |
+| `width`          | 视口宽度（覆盖`size`）             | `number`                                        | -       |
+| `height`         | 视口高度（覆盖`size`）             | `number`                                        | -       |
+| `info`           | 图片信息                           | `{ file: File, width: number, height: number }` | -       |
+| `viewSize`       | 观察窗口大小                       | `number`                                        | `180`   |
+| `grid`           | 是否为网格背景                     | `boolean`                                       | `false` |
+| `scaleStep`      | 缩放步长，单位px                   | `number`                                        | `10`    |
+| `ctrlScaleStep`  | Ctrl键缩放步长，单位px（0时禁用）  | `number`                                        | `5`     |
+| `shiftScaleStep` | Shift键缩放步长，单位px（0时禁用） | `number`                                        | `1`     |
+| `wheelReverse`   | 滚轮反向                           | `boolean`                                       | `false` |
+| `fixedImage`     | 图片固定模式                       | `boolean`                                       | `false` |
+| `minViewSize`    | 最小观察窗口尺寸                   | `number`                                        | `10`    |
+| `imagePadding`   | 图片边距                           | `number`                                        | `10`    |
+| `directionKey`   | 方向键移动                         | `boolean`                                       | `true`  |
+| `wasdKey`        | WASD键移动                         | `boolean`                                       | `true`  |
 
 ## Preview Props
 
