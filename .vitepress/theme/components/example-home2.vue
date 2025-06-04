@@ -28,7 +28,7 @@ onMounted(async () => {
             display: flex;
             align-items: center;
           "
-          @click="viewportRef?.select()"
+          @click="viewportRef?.select({ maxFileSize: 20 * 1024 * 1024 })"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"

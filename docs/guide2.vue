@@ -11,7 +11,7 @@ const fileSize = ref(0)
 const size = ref(0)
 
 const handleSelect = () => {
-  viewportRef.value?.select().catch((err) => {
+  viewportRef.value?.select({ maxFileSize: 20 * 1024 * 1024 }).catch((err) => {
     if (err instanceof Error && err.message === 'CANCEL') {
       return
     }

@@ -1,29 +1,15 @@
 <script setup lang="ts">
-import 'vue-select-avatar/style.css' // 引入样式
-import { Viewport /* ... */ } from 'vue-select-avatar' // 引入组件/函数等
-
-import { ref } from 'vue'
 import { ElMessage } from 'element-plus'
+import { selectAvatar } from '.'
+import { ref } from 'vue'
 
-const viewportRef = ref<InstanceType<typeof Viewport>>()
 const src = ref('')
 const fileSize = ref(0)
 const size = ref(0)
 
-const handleSelect = () => {
-  viewportRef.value?.select({ maxFileSize: 20 * 1024 * 1024 }).catch((err) => {
-    if (err instanceof Error && err.message === 'CANCEL') {
-      return
-    }
-    // 错误处理
-    console.error(err)
-    ElMessage.error(err.message)
-  })
-}
-
-const handleCropper = async () => {
+const handleSelect = async () => {
   try {
-    const file = await viewportRef.value?.cropper()
+    const file = await selectAvatar()
     if (file instanceof File) {
       if (src.value) {
         URL.revokeObjectURL(src.value)
@@ -32,6 +18,9 @@ const handleCropper = async () => {
       fileSize.value = file.size
     }
   } catch (error) {
+    if (error instanceof Error && error.message === 'CANCEL') {
+      return
+    }
     // 错误处理
     console.error(error)
     ElMessage.error(error.message)
@@ -57,13 +46,7 @@ const formatBytes = (bytes: number, decimals = 2) => {
 </script>
 
 <template>
-  <div style="width: fit-content">
-    <div style="display: flex; justify-content: space-between">
-      <button @click="handleSelect">选择图片</button>
-      <button @click="handleCropper">截取</button>
-    </div>
-    <Viewport ref="viewportRef" grid fixed-image />
-  </div>
+  <button @click="handleSelect">选择头像</button>
   <template v-if="src">
     <div style="font-size: 13px">{{ `${size}x${size} ${formatBytes(fileSize)}` }}</div>
     <img :src="src" @load="handleLoad" />

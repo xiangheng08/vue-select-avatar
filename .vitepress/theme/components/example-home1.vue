@@ -17,7 +17,9 @@ const load = async () => {
 }
 
 const handleSelect = async () => {
-  viewportRef.value?.select()
+  viewportRef.value?.select({
+    maxFileSize: 20 * 1024 * 1024,
+  })
 }
 
 const handleCropper = async () => {

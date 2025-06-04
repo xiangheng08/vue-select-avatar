@@ -2,6 +2,7 @@
 import Guide1 from './guide1.vue'
 import Guide2 from './guide2.vue'
 import Guide3 from './guide3.vue'
+import Guide4 from './guide4.vue'
 </script>
 
 # 快速开始
@@ -9,6 +10,12 @@ import Guide3 from './guide3.vue'
 ## 简介
 
 vue-select-avatar 是一个基于 Vue3 的头像选择的库，它提供了一个头像选择器组件、一个预览组件和一些工具函数。相比上一个版本，仅提供一个函数，虽然更加便捷，但是自定义和扩展难度更高，现在这个版本仅提供核心组件/工具函数，它更加精简、低耦合。同时也在[快速使用](/usage)中提供使用案例，以供参考，可自行复制。
+
+本库使用三个配置对象，分别对应选择图片、选择图片截取位置、图片截取：
+
+- [`ImageSelectOptions`](/options#imageselect-options)：图片选择的配置对象
+- [`ViewportProps`](/options#viewport-props)：`Viewport` 组件的 props
+- [`CropperOptions`](/options#cropper-options)：图片截取的配置对象
 
 ## 安装
 
@@ -52,13 +59,25 @@ yarn add vue-select-avatar
 
 ### 图片固定模式
 
-开启此模式后鼠标/触摸控制的就是观察窗，而不是图片
+开启此模式后鼠标/触摸控制的就是观察窗，而不是图片。
 
 <Guide3 />
 
 ::: details 查看代码
 
 <<< ./guide3.vue
+
+:::
+
+### 先选择图片再截取
+
+使用 `selectImage` 选择完图片后，再通过 `info` props 传入 `Viewport` 组件
+
+<Guide4 />
+
+::: details 查看代码
+
+<<< ./guide4.vue
 
 :::
 
