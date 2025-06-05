@@ -2,6 +2,7 @@
   "name": "vue-select-avatar",
   "version": "3.0.0-alpha.1",
   "description": "基于 vue 选择头像",
+  "author": "xiangheng08",
   "license": "MIT",
   "keywords": [
     "vue",
@@ -50,6 +51,9 @@
     "docs:dev": "vitepress dev",
     "docs:build": "vitepress build",
     "docs:preview": "vitepress preview"
+  },
+  "peerDependencies": {
+    "vue": "^3.5.13 <4.0.0"
   },
   "devDependencies": {
     "@tsconfig/node22": "^22.0.2",
