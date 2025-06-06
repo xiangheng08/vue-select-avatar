@@ -49,6 +49,7 @@ yarn add vue-select-avatar
 <ClientOnly>
   <ExampleHome1 />
 </ClientOnly>
+
 <ClientOnly>
   <ExampleHome2 />
 </ClientOnly>
