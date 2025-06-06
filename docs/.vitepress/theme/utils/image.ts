@@ -2,8 +2,14 @@ import { withBase } from 'vitepress'
 import { ImageSelectResult, loadImage, canvasToBlob } from 'vue-select-avatar'
 
 export const loadCatImage = async (): Promise<ImageSelectResult> => {
+  const _document = globalThis.document
+
+  if (!_document) {
+    throw new Error('document is not defined')
+  }
+
   const image = await loadImage(withBase('/cat.jpeg'))
-  const canvas = document.createElement('canvas')
+  const canvas = _document.createElement('canvas')
   canvas.width = image.width
   canvas.height = image.height
   const ctx = canvas.getContext('2d')

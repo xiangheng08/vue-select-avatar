@@ -15,12 +15,14 @@ export default {
   Layout: () => {
     const { isDark } = useData()
 
+    const _document = globalThis.document
+
     // element-plus dark mode
     watchEffect(() => {
       if (isDark.value) {
-        document.documentElement.classList.add('dark')
+        _document?.documentElement.classList.add('dark')
       } else {
-        document.documentElement.classList.remove('dark')
+        _document?.documentElement.classList.remove('dark')
       }
     })
 

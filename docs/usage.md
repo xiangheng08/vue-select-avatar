@@ -6,7 +6,9 @@ import Usage1 from './usage1/index.vue'
 
 ## 结合 el-dialog 函数式调用
 
-<Usage1 />
+<ClientOnly>
+  <Usage1 />
+</ClientOnly>
 
 ::: code-group
 

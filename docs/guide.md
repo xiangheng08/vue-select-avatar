@@ -43,7 +43,9 @@ yarn add vue-select-avatar
 
 ### 基础使用
 
-<Guide1 />
+<ClientOnly>
+  <Guide1 />
+</ClientOnly>
 
 ::: details 查看代码
 
@@ -53,7 +55,9 @@ yarn add vue-select-avatar
 
 ### 配合预览组件
 
-<Guide2 />
+<ClientOnly>
+  <Guide2 />
+</ClientOnly>
 
 ::: details 查看代码
 
@@ -65,7 +69,9 @@ yarn add vue-select-avatar
 
 开启此模式后鼠标/触摸控制的就是观察窗，而不是图片。
 
-<Guide3 />
+<ClientOnly>
+  <Guide3 />
+</ClientOnly>
 
 ::: details 查看代码
 
@@ -77,7 +83,9 @@ yarn add vue-select-avatar
 
 使用 `selectImage` 选择完图片后，再通过 `info` props 传入 `Viewport` 组件
 
-<Guide4 />
+<ClientOnly>
+  <Guide4 />
+</ClientOnly>
 
 ::: details 查看代码
 

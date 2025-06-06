@@ -46,5 +46,9 @@ yarn add vue-select-avatar
 
 ## 快速体验
 
-<ExampleHome1 />
-<ExampleHome2 />
+<ClientOnly>
+  <ExampleHome1 />
+</ClientOnly>
+<ClientOnly>
+  <ExampleHome2 />
+</ClientOnly>
