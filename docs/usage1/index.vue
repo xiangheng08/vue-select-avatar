@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ElMessage } from 'element-plus'
-import { selectAvatar } from '.'
+import { selectAvatar } from './index'
 import { ref } from 'vue'
 
 const src = ref('')

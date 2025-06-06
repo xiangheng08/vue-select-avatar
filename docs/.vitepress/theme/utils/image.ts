@@ -1,5 +1,5 @@
 import { withBase } from 'vitepress'
-import { ImageSelectResult, loadImage, canvasToBlob } from '../../../lib'
+import { ImageSelectResult, loadImage, canvasToBlob } from 'vue-select-avatar'
 
 export const loadCatImage = async (): Promise<ImageSelectResult> => {
   const image = await loadImage(withBase('/cat.jpeg'))

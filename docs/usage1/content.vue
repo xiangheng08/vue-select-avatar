@@ -14,22 +14,23 @@ defineProps<Props>()
 const viewportRef = ref<InstanceType<typeof Viewport>>()
 const visible = ref(true)
 
-const emit = defineEmits(['destroy', 'cancel', 'confirm'])
+const emit = defineEmits(['close', 'confirm'])
 
 const handleCancel = () => {
-  emit('cancel')
   visible.value = false
 }
 
 const handleConfirm = async () => {
-  const file = await viewportRef.value?.cropper()
+  const file = await viewportRef.value?.cropper({
+    // 裁剪配置...
+  })
   emit('confirm', file)
   visible.value = false
 }
 
 watchEffect(() => {
   if (!visible.value) {
-    emit('destroy')
+    emit('close')
   }
 })
 </script>

@@ -6,19 +6,19 @@ import ElementPlus from 'unplugin-element-plus/vite'
 export default defineConfig({
   title: 'vue-select-avatar',
   description: '一个基于 Vue3 的头像选择的库',
-  srcDir: 'docs',
   themeConfig: {
     // https://vitepress.dev/reference/default-theme-config
     nav: [
-      { text: '首页', link: '/' },
       { text: '快速开始', link: '/guide' },
       { text: '快速使用', link: '/usage' },
       { text: 'OPTIONS', link: '/options' },
+      { text: 'CHANGELOG', link: '/CHANGELOG' },
     ],
     sidebar: [
       { text: '快速开始', link: '/guide' },
       { text: '快速使用', link: '/usage' },
       { text: 'OPTIONS', link: '/options' },
+      { text: 'CHANGELOG', link: '/CHANGELOG' },
     ],
     socialLinks: [
       { icon: 'github', link: 'https://github.com/xiangheng08/vue-select-avatar' },

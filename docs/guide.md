@@ -35,6 +35,10 @@ yarn add vue-select-avatar
 
 :::
 
+::: warning
+3.0+ 版本仅支持 Vue 3.x，Vue 2.x 用户请使用 vue-select-avatar@2.x
+:::
+
 ## 使用
 
 ### 基础使用
