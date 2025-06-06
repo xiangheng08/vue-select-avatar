@@ -6,8 +6,8 @@
 
 <br />
 
-![style_1.png](https://raw.githubusercontent.com/xiangheng08vue-select-avatar/v3/static/style_1.png)
-![style_2.png](https://raw.githubusercontent.com/xiangheng08vue-select-avatar/v3/static/style_2.png)
+![style_1.png](https://raw.githubusercontent.com/xiangheng08/vue-select-avatar/refs/heads/v3/static/style_1.png)
+![style_2.png](https://raw.githubusercontent.com/xiangheng08/vue-select-avatar/refs/heads/v3/static/style_2.png)
 
 ## 功能特性
 
