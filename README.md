@@ -28,6 +28,8 @@ npm i vue-select-avatar
 
 [开发文档](https://xiangheng08.github.io/vue-select-avatar/)
 
+使用
+
 ```vue
 <script setup lang="ts">
 import 'vue-select-avatar/style.css'
@@ -75,7 +77,7 @@ pnpm i
 pnpm dev # 启动开发服务
 pnpm build # 构建项目
 pnpm docs:dev # 启动文档开发服务（请先运行 pnpm build）
-pnpm docs:build # 构建文档
+pnpm docs:build # 构建文档（请先运行 pnpm build）
 ```
 
 ## License
