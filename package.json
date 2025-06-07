@@ -1,6 +1,6 @@
 {
   "name": "vue-select-avatar",
-  "version": "3.0.0-alpha.2",
+  "version": "3.0.0-alpha.3",
   "description": "基于 vue 选择头像",
   "author": "xiangheng08",
   "license": "MIT",
@@ -54,7 +54,8 @@
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",
     "docs:preview": "vitepress preview docs",
-    "publish": "pnpm build && npm publish"
+    "pub": "run-s build publish-npm",
+    "publish-npm": "npm publish --access public"
   },
   "peerDependencies": {
     "vue": "^3.5.13 <4.0.0"
