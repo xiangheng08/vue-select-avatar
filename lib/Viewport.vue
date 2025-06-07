@@ -30,6 +30,7 @@ const props = withDefaults(defineProps<ViewportProps>(), {
   imagePadding: 10,
   directionKey: true,
   wasdKey: true,
+  forceDoubleLayer: false,
 })
 
 const pos = reactive(getDefaultPosition())
@@ -130,7 +131,7 @@ defineExpose({ select, cropper, initPosition, elEmitter, backing })
     />
     <div class="mask" :style="maskStyle"></div>
     <!-- 如果支持 clip-path 属性，则不渲染 view，已减少性能消耗 -->
-    <div class="view" :style="viewStyle" v-if="src && !isClipPathSupported">
+    <div class="view" :style="viewStyle" v-if="forceDoubleLayer || (src && !isClipPathSupported)">
       <img class="inner-image" :src="src" alt="inner-image" :style="innerImageStyle" />
     </div>
     <div

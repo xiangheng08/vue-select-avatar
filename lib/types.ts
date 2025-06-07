@@ -74,6 +74,10 @@ export interface ViewportProps {
    */
   wasdKey?: boolean
   /**
+   * 是否强制使用双层DOM
+   */
+  forceDoubleLayer?: boolean
+  /**
    * 尺寸是否显示 // TODO 待实现
    */
   showSize?: boolean
