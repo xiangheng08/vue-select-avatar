@@ -33,7 +33,7 @@ npm i vue-select-avatar
 ```vue
 <script setup lang="ts">
 import 'vue-select-avatar/style.css'
-import { Viewport } from 'vue-select-avatar'
+import { Viewport, isCancelError } from 'vue-select-avatar'
 
 import { ref } from 'vue'
 
@@ -45,7 +45,7 @@ const handleSelect = () => {
       // options...
     })
     .catch((err) => {
-      if (err instanceof Error && err.message === 'CANCEL') {
+      if (isCancelError(err)) {
         return
       }
     })
