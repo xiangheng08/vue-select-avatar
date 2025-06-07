@@ -72,6 +72,8 @@ const handleCropper = async () => {
 
 ```sh
 git clone https://github.com/xiangheng08/vue-select-avatar.git
+# or
+git clone https://gitee.com/xiangheng08/vue-select-avatar.git
 cd vue-select-avatar
 pnpm i
 pnpm dev # 启动开发服务

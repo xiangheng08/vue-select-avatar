@@ -23,7 +23,7 @@ features:
   - title: 原生 DOM 实时预览
     details: 基于 Vue3 Composition API 实现的双层 DOM 结构，通过 CSS transform 实时渲染，包含网格线辅助、放大镜悬浮预览和透明背景遮罩功能
   - title: 纯 Vue3 核心依赖
-    details: 仅依赖 Vue3 核心库（<40KB），无其他生产环境依赖项，支持 TypeScript 类型
+    details: 仅依赖 Vue3，无其他生产环境依赖项，支持 TypeScript 类型，核心代码小于 40KB
 ---
 
 ## 安装
