@@ -1,6 +1,6 @@
 import { getPointOffset } from './utils'
 import { watchEffect, reactive, ref, onMounted, onUnmounted, watch } from 'vue'
-import type { CSSProperties, Reactive, Ref } from 'vue'
+import type { ComputedRef, CSSProperties, Reactive, Ref } from 'vue'
 import type {
   ImageInfo,
   ImageSelectResult,
@@ -28,6 +28,7 @@ export interface HookOptions {
   pointPosition: Ref<PointPosition | undefined>
   backing: Ref<boolean>
   elEmitter: HTMLElement
+  showViewLayer: ComputedRef<boolean>
 }
 
 export const useStyles = (
@@ -40,7 +41,7 @@ export const useStyles = (
   innerImageStyle: CSSProperties
   consolesStyle: CSSProperties
 } => {
-  const { pos } = options
+  const { pos, showViewLayer, props } = options
 
   const viewportStyle = reactive<CSSProperties>({})
   const maskStyle = reactive<CSSProperties>({})
@@ -52,19 +53,27 @@ export const useStyles = (
   watchEffect(() => {
     viewportStyle.width = `${pos.viewportWidth}px`
     viewportStyle.height = `${pos.viewportHeight}px`
-    maskStyle.clipPath = `polygon(0% 0%, 0% 100%, ${pos.viewX}px 100%, ${pos.viewX}px ${pos.viewY}px, ${pos.viewX + pos.viewSize}px ${pos.viewY}px, ${pos.viewX + pos.viewSize}px ${pos.viewY + pos.viewSize}px, ${pos.viewX}px ${pos.viewY + pos.viewSize}px, ${pos.viewX}px 100%, 100% 100%, 100% 0%)`
     viewStyle.width = `${pos.viewSize}px`
     viewStyle.height = `${pos.viewSize}px`
     viewStyle.transform = `translate3d(${pos.viewX}px, ${pos.viewY}px, 0px)`
     imageStyle.width = `${pos.imageWidth}px`
     imageStyle.height = `${pos.imageHeight}px`
     imageStyle.transform = `translate3d(${pos.imageX}px, ${pos.imageY}px, 0px) scale(${pos.imageScale})`
-    innerImageStyle.width = `${pos.imageWidth}px`
-    innerImageStyle.height = `${pos.imageHeight}px`
-    innerImageStyle.transform = `translate3d(${pos.imageX - pos.viewX}px, ${pos.imageY - pos.viewY}px, 0px) scale(${pos.imageScale})`
     consolesStyle.width = `${pos.viewSize + 2}px`
     consolesStyle.height = `${pos.viewSize + 2}px`
     consolesStyle.transform = `translate3d(${pos.viewX - 1}px, ${pos.viewY - 1}px, 0px)`
+
+    if (props.forceDoubleLayer) {
+      maskStyle.clipPath = void 0
+    } else {
+      maskStyle.clipPath = `polygon(0% 0%, 0% 100%, ${pos.viewX}px 100%, ${pos.viewX}px ${pos.viewY}px, ${pos.viewX + pos.viewSize}px ${pos.viewY}px, ${pos.viewX + pos.viewSize}px ${pos.viewY + pos.viewSize}px, ${pos.viewX}px ${pos.viewY + pos.viewSize}px, ${pos.viewX}px 100%, 100% 100%, 100% 0%)`
+    }
+
+    if (showViewLayer.value) {
+      innerImageStyle.width = `${pos.imageWidth}px`
+      innerImageStyle.height = `${pos.imageHeight}px`
+      innerImageStyle.transform = `translate3d(${pos.imageX - pos.viewX}px, ${pos.imageY - pos.viewY}px, 0px) scale(${pos.imageScale})`
+    }
   })
 
   return { viewportStyle, maskStyle, viewStyle, imageStyle, innerImageStyle, consolesStyle }

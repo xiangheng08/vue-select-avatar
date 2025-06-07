@@ -48,6 +48,9 @@ const pressCtrl = usePressKey('Control')
 const pressShift = usePressKey('Shift')
 const isClipPathSupported = ref(getIsClipPathSupported())
 const pointPosition = ref<PointPosition>()
+const showViewLayer = computed(
+  () => props.forceDoubleLayer || (!!src.value && !isClipPathSupported.value),
+)
 
 const { backing, handleTransitionEnd } = useBacking({ imageMoving })
 
@@ -71,6 +74,7 @@ const hookOptions: HookOptions = {
   pointPosition,
   backing,
   elEmitter,
+  showViewLayer,
 }
 
 const { viewportStyle, maskStyle, viewStyle, imageStyle, innerImageStyle, consolesStyle } =
@@ -130,8 +134,7 @@ defineExpose({ select, cropper, initPosition, elEmitter, backing })
       @transitionend="handleTransitionEnd"
     />
     <div class="mask" :style="maskStyle"></div>
-    <!-- 如果支持 clip-path 属性，则不渲染 view，已减少性能消耗 -->
-    <div class="view" :style="viewStyle" v-if="forceDoubleLayer || (src && !isClipPathSupported)">
+    <div class="view" :style="viewStyle" v-if="showViewLayer">
       <img class="inner-image" :src="src" alt="inner-image" :style="innerImageStyle" />
     </div>
     <div
