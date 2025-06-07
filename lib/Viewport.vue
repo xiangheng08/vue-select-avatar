@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { getDefaultPosition } from './data'
+import { SelectAvatarError } from './error'
 import { computed, onMounted, reactive, ref } from 'vue'
 import { cropper as cropperFn, getIsClipPathSupported, selectImage } from './utils'
 import {
@@ -86,7 +87,7 @@ const select = async (options?: ImageSelectOptions) => {
 }
 
 const cropper = async <T extends File | string = File | string>(options?: CropperOptions) => {
-  if (!info.value) throw new Error('Please select an image first')
+  if (!info.value) throw new SelectAvatarError('NO_IMAGE_SELECTED')
   return cropperFn<T>(info.value, pos, options)
 }
 
