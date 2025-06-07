@@ -11,4 +11,5 @@ export const errorMessageMap_EN: ErrorMessageMap = {
   CANVAS_TO_BLOB_FAILED: 'Failed to convert canvas to blob',
   BLOB_TO_BASE64_FAILED: 'Failed to convert blob to base64',
   CANVAS_CONTEXT_NOT_DEFINED: 'Canvas context is undefined',
+  NO_IMAGE_SELECTED: 'No image selected',
 }

@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import 'vue-select-avatar/style.css'
-import { Viewport } from 'vue-select-avatar'
+import { Viewport, isCancelError, getErrorMessage } from 'vue-select-avatar'
 
 import { onMounted, ref } from 'vue'
 import { loadCatImage } from '../utils/image'
 import { formatBytes } from '../utils/format'
+import { ElMessage } from 'element-plus'
 
 const viewportRef = ref<InstanceType<typeof Viewport>>()
 const src = ref('')
@@ -17,9 +18,14 @@ const load = async () => {
 }
 
 const handleSelect = async () => {
-  viewportRef.value?.select({
-    maxFileSize: 20 * 1024 * 1024,
-  })
+  try {
+    await viewportRef.value?.select({
+      maxFileSize: 20 * 1024 * 1024,
+    })
+  } catch (error) {
+    if (isCancelError(error)) return
+    ElMessage.error(getErrorMessage(error))
+  }
 }
 
 const handleCropper = async () => {

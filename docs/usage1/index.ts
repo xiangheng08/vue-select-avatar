@@ -1,16 +1,18 @@
+import { selectImage, SelectAvatarError } from 'vue-select-avatar'
+
 import Content from './content.vue'
 import { createVNode, render } from 'vue'
-import { selectImage } from 'vue-select-avatar'
 
-export const selectAvatar = () => {
-  return new Promise<File>(async (resolve, reject) => {
+export const selectAvatar = async () => {
+  const res = await selectImage({
+    maxFileSize: 20 * 1024 * 1024,
+    // 其他配置...
+  })
+
+  return new Promise<File>((resolve, reject) => {
     let isConfirm = false
     let file: File | undefined
-
-    const res = await selectImage({
-      maxFileSize: 20 * 1024 * 1024,
-      // 其他配置...
-    })
+    let error: Error | undefined
 
     const el = document.createElement('div')
 
@@ -26,9 +28,11 @@ export const selectAvatar = () => {
         if (isConfirm) {
           resolve(file!)
         } else {
-          // 关闭时如果没有确认行为，同一视为取消
-          reject(new Error('CANCEL'))
+          reject(error || new SelectAvatarError('CANCEL'))
         }
+      },
+      onError(err: Error) {
+        error = err
       },
     })
 

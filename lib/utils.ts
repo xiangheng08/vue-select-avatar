@@ -38,7 +38,8 @@ export const selectFile = (options?: SelectFileOptions): Promise<File[]> => {
       }
     }
     input.oncancel = () => reject(new SelectAvatarError('CANCEL'))
-    input.onerror = (_event, _source, _lineno, _colno, error) => reject(error)
+    input.onerror = (_event, _source, _lineno, _colno, error) =>
+      reject(error || new SelectAvatarError('UNKNOWN'))
     input.click()
   })
 }
@@ -192,7 +193,11 @@ export const blobToBase64 = (blob: Blob) => {
   })
 }
 
-export const cropper = async (info: ImageInfo, pos: Position, options?: CropperOptions) => {
+export const cropper = async <T extends File | string = File | string>(
+  info: ImageInfo,
+  pos: Position,
+  options?: CropperOptions,
+): Promise<T> => {
   const {
     format = 'file',
     size,
@@ -250,9 +255,9 @@ export const cropper = async (info: ImageInfo, pos: Position, options?: CropperO
   const blob = await canvasToBlob(canvas, type, quality)
 
   if (format === 'file') {
-    return new File([blob], filename || info.file.name, { type })
+    return new File([blob], filename || info.file.name, { type }) as T
   } else {
-    return blobToBase64(blob)
+    return (await blobToBase64(blob)) as T
   }
 }
 

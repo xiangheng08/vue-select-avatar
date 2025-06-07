@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { isCancelError, getErrorMessage } from 'vue-select-avatar'
+
 import { ElMessage } from 'element-plus'
 import { selectAvatar } from './index'
 import { ref } from 'vue'
@@ -10,20 +12,16 @@ const size = ref(0)
 const handleSelect = async () => {
   try {
     const file = await selectAvatar()
-    if (file instanceof File) {
-      if (src.value) {
-        URL.revokeObjectURL(src.value)
-      }
-      src.value = URL.createObjectURL(file)
-      fileSize.value = file.size
+    if (src.value) {
+      URL.revokeObjectURL(src.value)
     }
+    src.value = URL.createObjectURL(file)
+    fileSize.value = file.size
   } catch (error) {
-    if (error instanceof Error && error.message === 'CANCEL') {
-      return
-    }
     // 错误处理
+    if (isCancelError(error)) return
     console.error(error)
-    ElMessage.error(error.message)
+    ElMessage.error(getErrorMessage(error))
   }
 }
 

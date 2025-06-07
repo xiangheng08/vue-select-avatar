@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import 'vue-select-avatar/style.css' // 引入样式
-import { Viewport, Preview } from 'vue-select-avatar' // 引入组件/函数等
+import { Viewport, Preview, isCancelError, getErrorMessage } from 'vue-select-avatar' // 引入组件/函数等
 
 import { ref } from 'vue'
 import { ElMessage } from 'element-plus'
@@ -12,19 +12,17 @@ const size = ref(0)
 
 const handleSelect = () => {
   viewportRef.value?.select({ maxFileSize: 20 * 1024 * 1024 }).catch((err) => {
-    if (err instanceof Error && err.message === 'CANCEL') {
-      return
-    }
+    if (isCancelError(err)) return
     // 错误处理
     console.error(err)
-    ElMessage.error(err.message)
+    ElMessage.error(getErrorMessage(err))
   })
 }
 
 const handleCropper = async () => {
   try {
-    const file = await viewportRef.value?.cropper()
-    if (file instanceof File) {
+    const file = await viewportRef.value?.cropper<File>()
+    if (file) {
       if (src.value) {
         URL.revokeObjectURL(src.value)
       }
@@ -34,7 +32,7 @@ const handleCropper = async () => {
   } catch (error) {
     // 错误处理
     console.error(error)
-    ElMessage.error(error.message)
+    ElMessage.error(getErrorMessage(error))
   }
 }
 

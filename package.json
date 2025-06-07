@@ -36,7 +36,7 @@
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
     },
-    "./errorMessage_en": {
+    "./errorMessage_en.js": {
       "import": "./dist/errorMessage_en.js",
       "require": "./dist/errorMessage_en.cjs"
     },

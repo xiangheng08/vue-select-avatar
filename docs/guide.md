@@ -127,3 +127,81 @@ Viewport Exposes
 Preview Exposes
 
 暂无
+
+## 错误处理
+
+`vue-select-avatar` 暴露了两个错误处理方法：`isCancelError` 和 `getErrorMessage`。
+
+```ts
+import { isCancelError, getErrorMessage } from 'vue-select-avatar'
+```
+
+- `isCancelError`: 判断错误是否为取消错误
+- `getErrorMessage`: 获取错误信息（默认是中文错误信息）
+
+```ts
+import { getErrorMessage, isCancelError, selectImage } from 'vue-select-avatar'
+
+import { ElMessage } from 'element-plus'
+
+selectImage().catch((err) => {
+  // 取消
+  if (isCancelError(err)) return
+  // 错误处理
+  console.error(err)
+  ElMessage.error(getErrorMessage(err))
+})
+```
+
+如果需要英文的错误信息，可以导入 `import { errorMessageMap_EN } from 'vue-select-avatar/errorMessage_en.js'` 并将 `getErrorMessage` 的第二个参数设置为 `errorMessageMap_EN`
+
+```ts
+import { getErrorMessage, isCancelError, selectImage } from 'vue-select-avatar'
+import { errorMessageMap_EN } from 'vue-select-avatar/errorMessage_en.js'
+
+import { ElMessage } from 'element-plus'
+
+selectImage({ maxFileSize: 20 * 1024 * 1024 }).catch((err) => {
+  // 取消
+  if (isCancelError(err)) return
+  // 错误处理
+  console.error(err)
+  ElMessage.error(getErrorMessage(err, errorMessageMap_EN))
+})
+```
+
+也可以自定义错误信息
+
+```ts
+import { getErrorMessage, isCancelError, selectImage, errorMessageMap } from 'vue-select-avatar'
+
+import { ElMessage } from 'element-plus'
+
+selectImage({ maxFileSize: 20 * 1024 * 1024 }).catch((err) => {
+  // 取消
+  if (isCancelError(err)) return
+  // 错误处理
+  console.error(err)
+  ElMessage.error(getErrorMessage(err, { ...errorMessageMap, CANCEL: '自定义错误信息' }))
+})
+```
+
+完整的 `errorMessageMap`
+
+```ts
+import type { ErrorMessageMap } from 'vue-select-avatar'
+
+export const errorMessageMap: ErrorMessageMap = {
+  UNKNOWN: '未知错误',
+  CANCEL: '取消',
+  NOT_IMAGE_FILE: '非图片文件',
+  IMAGE_FILE_TOO_LARGE: '图片文件过大',
+  IMAGE_TOO_SMALL: '图片尺寸过小',
+  IMAGE_TOO_LARGE: '图片尺寸过大',
+  IMAGE_LOAD_FAILED: '图片加载失败',
+  CANVAS_TO_BLOB_FAILED: 'canvas 转 blob 失败',
+  BLOB_TO_BASE64_FAILED: 'blob 转 base64 失败',
+  CANVAS_CONTEXT_NOT_DEFINED: 'canvas context 未定义',
+  NO_IMAGE_SELECTED: '未选择图片',
+}
+```

@@ -85,9 +85,9 @@ const select = async (options?: ImageSelectOptions) => {
   initPosition(res)
 }
 
-const cropper = async (options?: CropperOptions) => {
+const cropper = async <T extends File | string = File | string>(options?: CropperOptions) => {
   if (!info.value) throw new Error('Please select an image first')
-  return cropperFn(info.value, pos, options)
+  return cropperFn<T>(info.value, pos, options)
 }
 
 onMounted(() => {
