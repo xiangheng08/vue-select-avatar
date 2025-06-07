@@ -12,9 +12,11 @@ const __dirname = dirname(fileURLToPath(import.meta.url))
 export default defineConfig({
   build: {
     lib: {
-      entry: resolve(__dirname, 'lib/index.ts'),
-      name: 'lib',
-      fileName: (format) => `${format}.js`,
+      entry: {
+        index: resolve(__dirname, 'lib/index.ts'),
+        errorMessage_en: resolve(__dirname, 'lib/errorMessage_en.ts'),
+      },
+      name: 'vue-select-avatar',
     },
     rollupOptions: {
       external: ['vue'],

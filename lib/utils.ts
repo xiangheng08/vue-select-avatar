@@ -1,4 +1,5 @@
 import { accept } from './data'
+import { SelectAvatarError } from './error'
 import type {
   CropperOptions,
   ImageInfo,
@@ -33,10 +34,10 @@ export const selectFile = (options?: SelectFileOptions): Promise<File[]> => {
       if (files.length > 0) {
         resolve(files)
       } else {
-        reject(new Error('CANCEL'))
+        reject(new SelectAvatarError('CANCEL'))
       }
     }
-    input.oncancel = () => reject(new Error('CANCEL'))
+    input.oncancel = () => reject(new SelectAvatarError('CANCEL'))
     input.onerror = (_event, _source, _lineno, _colno, error) => reject(error)
     input.click()
   })
@@ -63,12 +64,12 @@ export const selectImage = async (options?: ImageSelectOptions): Promise<ImageSe
 
   // 非图片校验
   if (!file.type.startsWith('image/')) {
-    throw new Error('NOT_IMAGE')
+    throw new SelectAvatarError('NOT_IMAGE_FILE')
   }
 
   // 文件大小校验
   if (file.size > maxFileSize) {
-    throw new Error('FILE_SIZE_EXCEEDED')
+    throw new SelectAvatarError('IMAGE_FILE_TOO_LARGE')
   }
 
   // 获取原始尺寸
@@ -76,13 +77,13 @@ export const selectImage = async (options?: ImageSelectOptions): Promise<ImageSe
 
   // 最小尺寸校验
   if (typeof minSize === 'number' && Math.min(dimensions.width, dimensions.height) < minSize) {
-    throw new Error('IMAGE_TOO_SMALL')
+    throw new SelectAvatarError('IMAGE_TOO_SMALL')
   }
 
   // 缩放处理
   if (Math.max(dimensions.width, dimensions.height) > maxSize) {
     if (!resizeToMax) {
-      throw new Error('IMAGE_TOO_LARGE')
+      throw new SelectAvatarError('IMAGE_TOO_LARGE')
     }
     // 计算缩放比例
     const scale = maxSize / Math.max(dimensions.width, dimensions.height)
@@ -94,7 +95,7 @@ export const selectImage = async (options?: ImageSelectOptions): Promise<ImageSe
 
   if (shouldCompress(file, compress)) {
     // 压缩处理
-    file = await compressImage(file, quality, dimensions, 'image/png')
+    file = await resizeImage(file, dimensions, 'image/png', quality)
   } else if (resizeToMax) {
     // 仅缩放不压缩
     file = await resizeImage(file, dimensions, 'image/png')
@@ -112,12 +113,8 @@ interface ImageDimensions {
 }
 
 export const getImageDimensions = async (file: File): Promise<ImageDimensions> => {
-  return new Promise((resolve, reject) => {
-    const img = new Image()
-    img.onload = () => resolve({ width: img.width, height: img.height })
-    img.onerror = reject
-    img.src = URL.createObjectURL(file)
-  })
+  const img = await loadImage(URL.createObjectURL(file), true)
+  return { width: img.width, height: img.height }
 }
 
 // 辅助函数
@@ -130,67 +127,33 @@ export const resizeImage = async (
   file: File,
   dimensions: ImageDimensions,
   type?: string,
+  quality?: number,
 ): Promise<File> => {
-  return new Promise((resolve, reject) => {
-    const img = new Image()
-    img.onload = () => {
-      const canvas = document.createElement('canvas')
-      canvas.width = dimensions.width
-      canvas.height = dimensions.height
-      const ctx = canvas.getContext('2d')!
-      ctx.drawImage(img, 0, 0, dimensions.width, dimensions.height)
-      canvas.toBlob((blob) => {
-        resolve(new File([blob!], file.name, { type: type || file.type }))
-        URL.revokeObjectURL(img.src)
-      }, file.type)
-    }
-    img.onerror = () => {
-      reject(new Error('Failed to load image'))
-      URL.revokeObjectURL(img.src)
-    }
-    img.src = URL.createObjectURL(file)
-  })
+  const img = await loadImage(URL.createObjectURL(file), true)
+  const canvas = document.createElement('canvas')
+  canvas.width = dimensions.width
+  canvas.height = dimensions.height
+  const ctx = canvas.getContext('2d')
+  if (!ctx) throw new SelectAvatarError('CANVAS_CONTEXT_NOT_DEFINED')
+  ctx.drawImage(img, 0, 0, dimensions.width, dimensions.height)
+  const blob = await canvasToBlob(canvas, type || file.type, quality)
+  return new File([blob], file.name, { type: file.type })
 }
 
-export const compressImage = async (
-  file: File,
-  quality: number,
-  dimensions: ImageDimensions,
-  type?: string,
-): Promise<File> => {
-  return new Promise((resolve, reject) => {
-    const img = new Image()
-    img.onload = () => {
-      const canvas = document.createElement('canvas')
-      canvas.width = dimensions.width
-      canvas.height = dimensions.height
-      const ctx = canvas.getContext('2d')!
-      ctx.drawImage(img, 0, 0, dimensions.width, dimensions.height)
-      canvas.toBlob(
-        (blob) => {
-          resolve(new File([blob!], file.name, { type: type || file.type }))
-          URL.revokeObjectURL(img.src)
-        },
-        file.type,
-        quality,
-      )
-    }
-    img.onerror = () => {
-      reject(new Error('Failed to load image'))
-      URL.revokeObjectURL(img.src)
-    }
-    img.src = URL.createObjectURL(file)
-  })
-}
-
-export const loadImage = async (url: string) => {
+export const loadImage = async (url: string, revoke = false) => {
   return new Promise<HTMLImageElement>((resolve, reject) => {
     const img = new Image()
     img.onload = () => {
+      if (revoke) {
+        URL.revokeObjectURL(img.src)
+      }
       resolve(img)
     }
     img.onerror = () => {
-      reject(new Error('Failed to load image'))
+      if (revoke) {
+        URL.revokeObjectURL(img.src)
+      }
+      reject(new SelectAvatarError('IMAGE_LOAD_FAILED'))
     }
     img.src = url
   })
@@ -203,7 +166,7 @@ export const canvasToBlob = (canvas: HTMLCanvasElement, type?: string, quality?:
         if (blob) {
           resolve(blob)
         } else {
-          reject(new Error('Failed to convert canvas to blob'))
+          reject(new SelectAvatarError('CANVAS_TO_BLOB_FAILED'))
         }
       },
       type,
@@ -219,7 +182,7 @@ export const blobToBase64 = (blob: Blob) => {
       if (typeof reader.result === 'string') {
         resolve(reader.result)
       } else {
-        reject(new Error('Failed to convert blob to base64'))
+        reject(new SelectAvatarError('BLOB_TO_BASE64_FAILED'))
       }
     }
     reader.onerror = (error) => {
@@ -257,7 +220,7 @@ export const cropper = async (info: ImageInfo, pos: Position, options?: CropperO
   const canvas = document.createElement('canvas')
   const ctx = canvas.getContext('2d')
 
-  if (!ctx) throw new Error('Canvas context is null')
+  if (!ctx) throw new SelectAvatarError('CANVAS_CONTEXT_NOT_DEFINED')
 
   let s = pos.viewSize / pos.imageScale
   const x = (pos.viewX - pos.imageX) / pos.imageScale

@@ -1,6 +1,6 @@
 {
   "name": "vue-select-avatar",
-  "version": "3.0.0-alpha.1",
+  "version": "3.0.0-alpha.2",
   "description": "基于 vue 选择头像",
   "author": "xiangheng08",
   "license": "MIT",
@@ -29,19 +29,22 @@
   "files": [
     "dist"
   ],
-  "main": "./dist/umd.js",
-  "module": "./dist/es.js",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
   "exports": {
     ".": {
-      "import": "./dist/es.js",
-      "require": "./dist/umd.js"
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./errorMessage_en": {
+      "import": "./dist/errorMessage_en.js",
+      "require": "./dist/errorMessage_en.cjs"
     },
     "./style.css": "./dist/vue-select-avatar.css"
   },
   "scripts": {
     "dev": "vite",
     "build": "run-p type-check \"build-only {@}\" --",
-    "postbuild": "node ./scripts/postbuild.js",
     "preview": "vite preview",
     "test:unit": "vitest",
     "build-only": "vite build",
