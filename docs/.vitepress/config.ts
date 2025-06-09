@@ -13,13 +13,20 @@ export default defineConfig({
       { text: '快速开始', link: '/guide' },
       { text: '快速使用', link: '/usage' },
       { text: 'OPTIONS', link: '/options' },
-      { text: 'CHANGELOG', link: '/CHANGELOG' },
+      {
+        text: '其他',
+        items: [
+          { text: 'CHANGELOG', link: '/CHANGELOG' },
+          { text: '关于', link: '/about' },
+        ],
+      },
     ],
     sidebar: [
       { text: '快速开始', link: '/guide' },
       { text: '快速使用', link: '/usage' },
       { text: 'OPTIONS', link: '/options' },
       { text: 'CHANGELOG', link: '/CHANGELOG' },
+      { text: '关于', link: '/about' },
     ],
     socialLinks: [
       { icon: 'github', link: 'https://github.com/xiangheng08/vue-select-avatar' },

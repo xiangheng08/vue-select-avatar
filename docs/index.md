@@ -13,6 +13,9 @@ hero:
     - theme: alt
       text: OPTIONS
       link: /options
+    - theme: alt
+      text: 关于
+      link: /about
   image:
     src: /demo.gif
     alt: demo
