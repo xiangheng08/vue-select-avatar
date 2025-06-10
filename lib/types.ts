@@ -78,6 +78,10 @@ export interface ViewportProps {
    */
   forceDoubleLayer?: boolean
   /**
+   * 使用阴影实现观察窗镂空效果
+   */
+  shadowMask?: boolean
+  /**
    * 尺寸是否显示 // TODO 待实现
    */
   showSize?: boolean

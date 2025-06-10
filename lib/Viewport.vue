@@ -31,6 +31,7 @@ const props = withDefaults(defineProps<ViewportProps>(), {
   directionKey: true,
   wasdKey: true,
   forceDoubleLayer: false,
+  shadowMask: true,
 })
 
 const pos = reactive(getDefaultPosition())
@@ -117,6 +118,7 @@ defineExpose({ select, cropper, initPosition, elEmitter, backing })
         'view-moving': viewMoving,
         'view-resizing': viewResizing,
         'fixed-image': fixedImage,
+        'shadow-mark': shadowMask,
       },
       pointPosition,
     ]"
@@ -232,6 +234,11 @@ defineExpose({ select, cropper, initPosition, elEmitter, backing })
     .image,
     .inner-image {
       transition: transform 0.3s ease;
+    }
+  }
+  &.shadow-mark {
+    .mask {
+      background-color: transparent;
     }
   }
   .image {

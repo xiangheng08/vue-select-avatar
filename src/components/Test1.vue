@@ -27,6 +27,7 @@ const viewportProps = reactive<ViewportProps>({
   directionKey: true,
   wasdKey: true,
   forceDoubleLayer: false,
+  shadowMask: true,
 })
 const selectOptions = reactive<ImageSelectOptions>({
   accept,
@@ -197,6 +198,12 @@ try {
         </el-form-item>
         <el-form-item label="forceDoubleLayer">
           <el-radio-group v-model="viewportProps.forceDoubleLayer">
+            <el-radio :value="true">true</el-radio>
+            <el-radio :value="false">false</el-radio>
+          </el-radio-group>
+        </el-form-item>
+        <el-form-item label="shadowMask">
+          <el-radio-group v-model="viewportProps.shadowMask">
             <el-radio :value="true">true</el-radio>
             <el-radio :value="false">false</el-radio>
           </el-radio-group>

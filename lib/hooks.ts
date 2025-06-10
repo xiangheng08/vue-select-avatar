@@ -63,10 +63,17 @@ export const useStyles = (
     consolesStyle.height = `${pos.viewSize + 2}px`
     consolesStyle.transform = `translate3d(${pos.viewX - 1}px, ${pos.viewY - 1}px, 0px)`
 
-    if (props.forceDoubleLayer) {
+    if (props.forceDoubleLayer || props.shadowMask) {
       maskStyle.clipPath = void 0
     } else {
       maskStyle.clipPath = `polygon(0% 0%, 0% 100%, ${pos.viewX}px 100%, ${pos.viewX}px ${pos.viewY}px, ${pos.viewX + pos.viewSize}px ${pos.viewY}px, ${pos.viewX + pos.viewSize}px ${pos.viewY + pos.viewSize}px, ${pos.viewX}px ${pos.viewY + pos.viewSize}px, ${pos.viewX}px 100%, 100% 100%, 100% 0%)`
+    }
+
+    if (props.shadowMask) {
+      const spread = (Math.max(pos.viewportWidth, pos.viewportHeight) - pos.viewSize) / 2
+      maskStyle.boxShadow = `inset ${pos.viewX - spread}px ${pos.viewY - spread}px 0px ${spread}px var(--mask-color)`
+    } else {
+      maskStyle.boxShadow = void 0
     }
 
     if (showViewLayer.value) {
