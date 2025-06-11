@@ -254,8 +254,8 @@ defineExpose({ select, cropper, initPosition, elEmitter, backing })
     position: absolute;
     left: 0;
     top: 0;
-    width: 101%;
-    height: 101%;
+    width: 100%;
+    height: 100%;
     background-color: var(--mask-color);
     pointer-events: none;
   }
