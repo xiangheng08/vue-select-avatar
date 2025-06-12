@@ -82,10 +82,9 @@ const { viewportStyle, maskStyle, viewStyle, imageStyle, innerImageStyle, consol
   useStyles(hookOptions)
 
 const { initPosition } = useInitPosition(hookOptions)
-const { handleMouseDown, handlePointMouseDown, handleViewMouseDown } = useMouseHandles(hookOptions)
+const { handleMouseDown, handlePointMouseDown } = useMouseHandles(hookOptions)
 const { handleWheel } = useWheelHandles(hookOptions)
-const { handleTouchStart, handlePointTouchStart, handleViewTouchStart } =
-  useTouchHandles(hookOptions)
+const { handleTouchStart, handlePointTouchStart } = useTouchHandles(hookOptions)
 useKeyMove(hookOptions)
 const select = async (options?: ImageSelectOptions) => {
   const res = await selectImage(options)
@@ -139,13 +138,7 @@ defineExpose({ select, cropper, initPosition, elEmitter, backing })
     <div class="view" :style="viewStyle" v-if="showViewLayer">
       <img class="inner-image" :src="src" alt="inner-image" :style="innerImageStyle" />
     </div>
-    <div
-      class="consoles"
-      :style="consolesStyle"
-      v-if="fixedImage"
-      @mousedown="handleViewMouseDown"
-      @touchstart="handleViewTouchStart"
-    >
+    <div class="consoles" :style="consolesStyle" v-if="fixedImage">
       <div
         class="point top-left"
         @mousedown="handlePointMouseDown($event, 'top-left')"

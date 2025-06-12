@@ -50,7 +50,7 @@ export const useStyles = (
   const innerImageStyle = reactive<CSSProperties>({})
   const consolesStyle = reactive<CSSProperties>({})
 
-  watchEffect(() => {
+  const setStyles = () => {
     viewportStyle.width = `${pos.viewportWidth}px`
     viewportStyle.height = `${pos.viewportHeight}px`
     viewStyle.width = `${pos.viewSize}px`
@@ -66,7 +66,10 @@ export const useStyles = (
     if (props.forceDoubleLayer || props.shadowMask) {
       maskStyle.clipPath = void 0
     } else {
-      maskStyle.clipPath = `polygon(0% 0%, 0% 100%, ${pos.viewX}px 100%, ${pos.viewX}px ${pos.viewY}px, ${pos.viewX + pos.viewSize}px ${pos.viewY}px, ${pos.viewX + pos.viewSize}px ${pos.viewY + pos.viewSize}px, ${pos.viewX}px ${pos.viewY + pos.viewSize}px, ${pos.viewX}px 100%, 100% 100%, 100% 0%)`
+      const x = pos.viewX
+      const y = pos.viewY
+      const s = pos.viewSize
+      maskStyle.clipPath = `polygon(0% 0%, 0% 100%, ${x}px 100%, ${x}px ${y}px, ${x + s}px ${y}px, ${x + s}px ${y + s}px, ${x}px ${y + s}px, ${x}px 100%, 100% 100%, 100% 0%)`
     }
 
     if (props.shadowMask) {
@@ -81,6 +84,11 @@ export const useStyles = (
       innerImageStyle.height = `${pos.imageHeight}px`
       innerImageStyle.transform = `translate3d(${pos.imageX - pos.viewX}px, ${pos.imageY - pos.viewY}px, 0px) scale(${pos.imageScale})`
     }
+  }
+
+  watch([pos, showViewLayer, () => props.forceDoubleLayer, () => props.shadowMask], setStyles, {
+    deep: true,
+    immediate: true,
   })
 
   return { viewportStyle, maskStyle, viewStyle, imageStyle, innerImageStyle, consolesStyle }
@@ -323,7 +331,8 @@ export const useMouseHandles = (options: HookOptions) => {
   const { checkViewPosition } = useCheckViewPosition(options)
 
   const handleMouseDown = (e: MouseEvent) => {
-    if (!info.value || props.fixedImage) return
+    if (props.fixedImage) return handleViewMouseDown(e)
+    if (!info.value) return
 
     e.preventDefault()
     e.stopPropagation()
@@ -430,7 +439,7 @@ export const useMouseHandles = (options: HookOptions) => {
     document.removeEventListener('mouseup', handleViewMouseUp)
   }
 
-  return { handleMouseDown, handlePointMouseDown, handleViewMouseDown }
+  return { handleMouseDown, handlePointMouseDown }
 }
 
 export const useWheelHandles = (options: HookOptions) => {
@@ -517,7 +526,8 @@ export const useTouchHandles = (options: HookOptions) => {
   const startViewPos = ref<SimplePosition>({ x: 0, y: 0 })
   const pointOffset = ref<SimplePosition>({ x: 0, y: 0 })
   const handleTouchStart = (e: TouchEvent) => {
-    if (!info.value || props.fixedImage) return
+    if (props.fixedImage) return handleViewTouchStart(e)
+    if (!info.value) return
 
     e.preventDefault()
     e.stopPropagation()
@@ -731,7 +741,7 @@ export const useTouchHandles = (options: HookOptions) => {
     handleViewTouchEnd(e)
   }
 
-  return { handleTouchStart, handlePointTouchStart, handleViewTouchStart }
+  return { handleTouchStart, handlePointTouchStart }
 }
 
 export const useImageInfo = () => {
