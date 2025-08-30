@@ -138,7 +138,7 @@ export const resizeImage = async (
   if (!ctx) throw new SelectAvatarError('CANVAS_CONTEXT_NOT_DEFINED')
   ctx.drawImage(img, 0, 0, dimensions.width, dimensions.height)
   const blob = await canvasToBlob(canvas, type || file.type, quality)
-  return new File([blob], file.name, { type: file.type })
+  return new File([blob], file.name, { type: type || file.type })
 }
 
 export const loadImage = async (url: string, revoke = false) => {
