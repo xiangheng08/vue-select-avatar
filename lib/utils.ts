@@ -58,6 +58,7 @@ export const selectImage = async (options?: ImageSelectOptions): Promise<ImageSe
     resizeToMax = false,
     compress = false,
     quality = 0.8,
+    minVectorSize = 1024,
   } = options || {}
 
   // 选择文件
@@ -76,21 +77,34 @@ export const selectImage = async (options?: ImageSelectOptions): Promise<ImageSe
   // 获取原始尺寸
   let dimensions = await getImageDimensions(file)
 
-  // 最小尺寸校验
-  if (typeof minSize === 'number' && Math.min(dimensions.width, dimensions.height) < minSize) {
-    throw new SelectAvatarError('IMAGE_TOO_SMALL')
-  }
+  if (isVectorImage(file)) {
+    // 矢量图不进行尺寸校验
 
-  // 缩放处理
-  if (Math.max(dimensions.width, dimensions.height) > maxSize) {
-    if (!resizeToMax) {
-      throw new SelectAvatarError('IMAGE_TOO_LARGE')
+    if (Math.min(dimensions.width, dimensions.height) < minVectorSize) {
+      // 保证矢量图尺寸
+      const scale = minVectorSize / Math.min(dimensions.width, dimensions.height)
+      dimensions = {
+        width: Math.floor(dimensions.width * scale),
+        height: Math.floor(dimensions.height * scale),
+      }
     }
-    // 计算缩放比例
-    const scale = maxSize / Math.max(dimensions.width, dimensions.height)
-    dimensions = {
-      width: Math.floor(dimensions.width * scale),
-      height: Math.floor(dimensions.height * scale),
+  } else {
+    // 最小尺寸校验
+    if (typeof minSize === 'number' && Math.min(dimensions.width, dimensions.height) < minSize) {
+      throw new SelectAvatarError('IMAGE_TOO_SMALL')
+    }
+
+    // 缩放处理
+    if (Math.max(dimensions.width, dimensions.height) > maxSize) {
+      if (!resizeToMax) {
+        throw new SelectAvatarError('IMAGE_TOO_LARGE')
+      }
+      // 计算缩放比例
+      const scale = maxSize / Math.max(dimensions.width, dimensions.height)
+      dimensions = {
+        width: Math.floor(dimensions.width * scale),
+        height: Math.floor(dimensions.height * scale),
+      }
     }
   }
 
@@ -191,6 +205,10 @@ export const blobToBase64 = (blob: Blob) => {
     }
     reader.readAsDataURL(blob)
   })
+}
+
+export const isVectorImage = (file: File): boolean => {
+  return file.type.startsWith('image/svg')
 }
 
 export const cropper = async <T extends File | string = File | string>(

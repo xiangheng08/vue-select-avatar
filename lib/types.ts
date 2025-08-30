@@ -129,6 +129,12 @@ export interface ImageSelectOptions {
    * @default 0.8
    */
   quality?: number
+
+  /**
+   * 矢量图最小尺寸
+   * @default 1024
+   */
+  minVectorSize?: number
 }
 
 export interface ImageSelectResult {
