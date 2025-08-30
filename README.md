@@ -1,6 +1,8 @@
 # vue-select-avatar [![NPM Version][npm-version-image]][npm-url] [![NPM Downloads][npm-downloads-image]][npm-url]
 
-基于 Vue 3 的头像选择与裁剪组件，支持图片校验、压缩和格式转换。
+基于 Vue 3 的头像选择与裁剪组件，支持图片校验、压缩和格式转换
+
+> 或者说输出一个正方形图片的库
 
 ![demo.gif](https://xiangheng08.github.io/vue-select-avatar/demo.gif)
 
@@ -22,13 +24,15 @@
 
 ```sh
 npm i vue-select-avatar
+pnpm add vue-select-avatar
+yarn add vue-select-avatar
 ```
 
 ## 文档
 
-[文档](https://xiangheng08.github.io/vue-select-avatar/)
+[点击查看文档](https://xiangheng08.github.io/vue-select-avatar/)
 
-使用
+## 使用
 
 ```vue
 <script setup lang="ts">
