@@ -30,7 +30,7 @@ const handleClear = () => {
 }
 
 const handleLoad = (e: Event) => {
-  size.value = (e.target as HTMLImageElement).width
+  size.value = (e.target as HTMLImageElement).naturalWidth
 }
 
 // 辅助函数
@@ -44,10 +44,16 @@ const formatBytes = (bytes: number, decimals = 2) => {
 </script>
 
 <template>
-  <button @click="handleSelect">选择头像</button>
+  <button @click="handleSelect" class="select-avatar-button">选择头像</button>
   <template v-if="src">
     <div style="font-size: 13px">{{ `${size}x${size} ${formatBytes(fileSize)}` }}</div>
     <img :src="src" @load="handleLoad" />
     <button @click="handleClear">清除</button>
   </template>
 </template>
+
+<style scoped>
+button {
+  all: revert;
+}
+</style>

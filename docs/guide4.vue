@@ -51,7 +51,7 @@ const handleClear = () => {
 }
 
 const handleLoad = (e: Event) => {
-  size.value = (e.target as HTMLImageElement).width
+  size.value = (e.target as HTMLImageElement).naturalWidth
 }
 
 const handleClearInfo = () => {
