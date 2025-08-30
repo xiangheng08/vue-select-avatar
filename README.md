@@ -4,12 +4,12 @@
 
 > 或者说输出一个正方形图片的库
 
-![demo.gif](https://xiangheng08.github.io/vue-select-avatar/demo.gif)
+![demo.gif](https://xiangheng08.github.io/vue-select-avatar/demo-compress.gif)
 
 <br />
 
-![style_1.png](https://raw.githubusercontent.com/xiangheng08/vue-select-avatar/refs/heads/v3/static/style_1.png)
-![style_2.png](https://raw.githubusercontent.com/xiangheng08/vue-select-avatar/refs/heads/v3/static/style_2.png)
+![style_1.png](https://xiangheng08.github.io/vue-select-avatar/style_1.png)
+![style_2.png](https://xiangheng08.github.io/vue-select-avatar/style_2.png)
 
 ## 功能特性
 

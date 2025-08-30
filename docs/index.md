@@ -17,7 +17,7 @@ hero:
       text: 关于
       link: /about
   image:
-    src: /demo.gif
+    src: /demo-compress.gif
     alt: demo
 
 features:
