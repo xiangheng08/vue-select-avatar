@@ -29,6 +29,7 @@ export default defineConfig({
       { text: '关于', link: '/about' },
     ],
     socialLinks: [
+      { icon: 'npm', link: 'https://www.npmjs.com/package/vue-select-avatar' },
       { icon: 'github', link: 'https://github.com/xiangheng08/vue-select-avatar' },
       { icon: 'gitee', link: 'https://gitee.com/xiangheng08/vue-select-avatar' },
     ],
