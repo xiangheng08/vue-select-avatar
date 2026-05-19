@@ -279,7 +279,7 @@ export interface PreviewProps {
 // #endregion PreviewProps
 
 // #region ErrorCode
-type ErrorCode =
+export type ErrorCode =
   | 'UNKNOWN' // 未知错误
   | 'CANCEL' // 取消
   | 'NOT_IMAGE_FILES' // 非图片文件
