@@ -1,18 +1,25 @@
+import { fileURLToPath, URL } from 'node:url'
+import { readFileSync } from 'node:fs'
 import { defineConfig } from 'vitepress'
 import { groupIconMdPlugin, groupIconVitePlugin } from 'vitepress-plugin-group-icons'
 import ElementPlus from 'unplugin-element-plus/vite'
 
+const pkg = JSON.parse(
+  readFileSync(fileURLToPath(new URL('../../package.json', import.meta.url)), 'utf-8'),
+)
+
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
-  title: 'vue-select-avatar',
-  description: '一个基于 Vue3 的头像选择的库',
+  title: pkg.name,
+  description: pkg.description,
   base: process.env.DOCS_BASE_URL,
   themeConfig: {
     // https://vitepress.dev/reference/default-theme-config
     nav: [
       { text: '快速开始', link: '/guide' },
       { text: '快速使用', link: '/usage' },
-      { text: 'OPTIONS', link: '/options' },
+      { text: '组件', link: '/components' },
+      { text: 'API', link: '/api' },
       {
         text: '其他',
         items: [
@@ -24,7 +31,8 @@ export default defineConfig({
     sidebar: [
       { text: '快速开始', link: '/guide' },
       { text: '快速使用', link: '/usage' },
-      { text: 'OPTIONS', link: '/options' },
+      { text: '组件', link: '/components' },
+      { text: 'API', link: '/api' },
       { text: 'CHANGELOG', link: '/CHANGELOG' },
       { text: '关于', link: '/about' },
     ],
@@ -49,9 +57,9 @@ export default defineConfig({
       host: '0.0.0.0',
     },
     plugins: [
-      // @ts-ignore vitepress 所依赖的 vite 与本项目的 vite 版本不兼容，但是可用，所以忽略
+      // @ts-expect-error 忽略类型错误
       groupIconVitePlugin(),
-      // @ts-ignore
+      // @ts-expect-error 忽略类型错误
       ElementPlus(),
     ],
     css: {
@@ -63,6 +71,9 @@ export default defineConfig({
     },
     ssr: {
       noExternal: ['element-plus'],
+    },
+    optimizeDeps: {
+      exclude: ['vue-select-avatar'],
     },
   },
 })

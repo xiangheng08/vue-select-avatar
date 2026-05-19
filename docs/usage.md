@@ -1,5 +1,5 @@
 <script setup>
-import Usage1 from './usage1/index.vue'
+import Usage1 from './components/usage1/index.vue'
 </script>
 
 # 快速使用
@@ -12,10 +12,10 @@ import Usage1 from './usage1/index.vue'
 
 ::: code-group
 
-<<< ./usage1/index.vue [示例代码.vue]
+<<< ./components/usage1/index.vue [示例代码.vue]
 
-<<< ./usage1/index.ts [index.ts]
+<<< ./components/usage1/index.ts [index.ts]
 
-<<< ./usage1/content.vue [content.vue]
+<<< ./components/usage1/content.vue [content.vue]
 
 :::

@@ -4,29 +4,26 @@ layout: home
 
 hero:
   name: vue-select-avatar
-  text: 一个基于 Vue3 的头像选择的库
+  text: 一个头像集选择/裁剪的组件库
   tagline: 或者说输出一个正方形图片的库
   actions:
     - theme: brand
       text: 快速开始
       link: /guide
     - theme: alt
-      text: OPTIONS
-      link: /options
-    - theme: alt
-      text: 关于
-      link: /about
+      text: 组件
+      link: /components
   image:
     src: /demo-compress.gif
     alt: demo
 
 features:
-  - title: 精准头像裁剪
-    details: 通过拖拽/缩放精确控制1:1比例裁剪框，自动吸附边缘对齐，支持触控设备双指操作，输出标准正方形图片
-  - title: 原生 DOM 实时预览
-    details: 基于 Vue3 Composition API 实现的双层 DOM 结构，通过 CSS transform 实时渲染，包含网格线辅助、放大镜悬浮预览和透明背景遮罩功能
-  - title: 纯 Vue3 核心依赖
-    details: 仅依赖 Vue3，无其他生产环境依赖项，支持 TypeScript 类型，核心代码小于 40KB
+  - title: ✂️ 精准头像裁剪
+    details: 通过拖拽/缩放精确控制1:1比例裁剪，自动吸附边缘对齐，支持触控设备双指操作，输出标准正方形图片
+  - title: 🖱️ 丰富的交互功能
+    details: 提供多种交互模式（固定图片或固定观察窗），支持鼠标拖拽、滚轮缩放、键盘快捷键移动，以及触摸设备的单指拖动和双指缩放操作，实时预览裁剪效果
+  - title: 🚀 纯 Vue3 核心依赖
+    details: 仅依赖 Vue3，无其他生产环境依赖项，TypeScript 类型全面，核心代码小于 40KB
 ---
 
 ## 安装

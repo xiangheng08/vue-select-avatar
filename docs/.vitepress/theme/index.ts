@@ -9,6 +9,7 @@ import 'element-plus/theme-chalk/dark/css-vars.css'
 
 import ExampleHome1 from './components/example-home1.vue'
 import ExampleHome2 from './components/example-home2.vue'
+import { Viewport, Preview } from 'vue-select-avatar'
 
 export default {
   extends: DefaultTheme,
@@ -33,5 +34,7 @@ export default {
   enhanceApp({ app }) {
     app.component('ExampleHome1', ExampleHome1)
     app.component('ExampleHome2', ExampleHome2)
+    app.component('Viewport', Viewport)
+    app.component('Preview', Preview)
   },
 } satisfies Theme

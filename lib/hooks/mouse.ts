@@ -1,13 +1,10 @@
 import { ref } from 'vue'
-import { useResizeView } from './resize'
 import { getPointOffset } from '../utils'
-import { useCheckImageBack, useCheckViewPosition } from './check'
-import type { HookOptions } from './types'
-import type { PointPosition, SimplePosition } from '../types'
+import type { HookContext, PointPosition, SimplePosition } from '../types'
 
-export const useMouseHandles = (options: HookOptions) => {
+export const useMouseHandles = (context: HookContext) => {
   const { imageMoving, viewMoving, viewResizing, info, pos, props, viewportRef, pointPosition } =
-    options
+    context
 
   const lastPos = ref<SimplePosition>({ x: 0, y: 0 })
   const startPos = ref<SimplePosition>({ x: 0, y: 0 })
@@ -15,12 +12,8 @@ export const useMouseHandles = (options: HookOptions) => {
   const viewportPos = ref<SimplePosition>({ x: 0, y: 0 })
   const pointOffset = ref<SimplePosition>({ x: 0, y: 0 })
 
-  const { checkImageBack } = useCheckImageBack(options)
-  const { resizeView } = useResizeView(options)
-  const { checkViewPosition } = useCheckViewPosition(options)
-
   const handleMouseDown = (e: MouseEvent) => {
-    if (props.fixedImage) return handleViewMouseDown(e)
+    if (props.mode === 'fixed-image') return handleViewMouseDown(e)
     if (!info.value) return
 
     e.preventDefault()
@@ -47,7 +40,7 @@ export const useMouseHandles = (options: HookOptions) => {
     imageMoving.value = false
     document.removeEventListener('mousemove', handleMouseMove)
     document.removeEventListener('mouseup', handleMouseUp)
-    checkImageBack()
+    context.checkImageBack()
   }
 
   const handlePointMouseDown = (e: MouseEvent, position: PointPosition) => {
@@ -83,7 +76,7 @@ export const useMouseHandles = (options: HookOptions) => {
     newPos.x -= pointOffset.value.x
     newPos.y -= pointOffset.value.y
 
-    resizeView(newPos)
+    context.resizeView(newPos)
 
     lastPos.value = newPos
   }
@@ -96,7 +89,7 @@ export const useMouseHandles = (options: HookOptions) => {
   }
 
   const handleViewMouseDown = (e: MouseEvent) => {
-    if (!props.fixedImage || !viewportRef.value) return
+    if (props.mode === 'fixed-view' || !viewportRef.value) return
 
     e.preventDefault()
     e.stopPropagation()
@@ -119,7 +112,7 @@ export const useMouseHandles = (options: HookOptions) => {
     pos.viewX = e.clientX - startPos.value.x + startViewPos.value.x
     pos.viewY = e.clientY - startPos.value.y + startViewPos.value.y
 
-    checkViewPosition()
+    context.checkViewPosition()
   }
 
   const handleViewMouseUp = () => {
@@ -129,63 +122,4 @@ export const useMouseHandles = (options: HookOptions) => {
   }
 
   return { handleMouseDown, handlePointMouseDown }
-}
-
-export const useWheelHandles = (options: HookOptions) => {
-  const {
-    props,
-    imageMoving,
-    pos,
-    viewportRef,
-    info,
-    minImageScale,
-    pressCtrl,
-    pressShift,
-    step,
-    ctrlStep,
-    shiftStep,
-  } = options
-
-  const getStep = (deltaY = -1) => {
-    let _step = step.value
-    if (props.shiftScaleStep! > 0 && pressShift.value) {
-      _step = shiftStep.value
-    } else if (props.ctrlScaleStep! > 0 && pressCtrl.value) {
-      _step = ctrlStep.value
-    }
-    if (deltaY > 0) {
-      _step = -_step
-    }
-    if (props.wheelReverse) {
-      _step = -_step
-    }
-    return _step
-  }
-
-  const { checkImageBack } = useCheckImageBack(options)
-
-  const handleWheel = (e: WheelEvent) => {
-    if (!info.value || imageMoving.value || props.fixedImage) return
-    e.preventDefault()
-    e.stopPropagation()
-
-    // 获取视口位置和尺寸
-    const viewport = viewportRef.value!
-    const rect = viewport.getBoundingClientRect()
-    const vx = e.clientX - rect.left // 鼠标在视口中的X坐标
-    const vy = e.clientY - rect.top // 鼠标在视口中的Y坐标
-
-    const oldScale = pos.imageScale
-    const delta = getStep(e.deltaY)
-    const newScale = Math.max(minImageScale.value, oldScale + delta) // 避免缩放过小
-
-    // 以鼠标为中心缩放
-    pos.imageX = vx - (vx - pos.imageX) * (newScale / oldScale)
-    pos.imageY = vy - (vy - pos.imageY) * (newScale / oldScale)
-
-    pos.imageScale = newScale
-    checkImageBack(false)
-  }
-
-  return { handleWheel }
 }

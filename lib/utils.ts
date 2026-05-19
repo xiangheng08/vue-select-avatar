@@ -1,7 +1,7 @@
-import { accept } from './data'
-import { SelectAvatarError } from './error'
+import { DEFAULT_ACCEPT } from './defaults'
+import { AvatarError } from './error'
 import type {
-  CropperOptions,
+  CropOptions,
   ImageInfo,
   ImageSelectOptions,
   ImageSelectResult,
@@ -34,12 +34,12 @@ export const selectFile = (options?: SelectFileOptions): Promise<File[]> => {
       if (files.length > 0) {
         resolve(files)
       } else {
-        reject(new SelectAvatarError('CANCEL'))
+        reject(new AvatarError('CANCEL'))
       }
     }
-    input.oncancel = () => reject(new SelectAvatarError('CANCEL'))
+    input.oncancel = () => reject(new AvatarError('CANCEL'))
     input.onerror = (_event, _source, _lineno, _colno, error) =>
-      reject(error || new SelectAvatarError('UNKNOWN'))
+      reject(error || new AvatarError('UNKNOWN'))
     input.click()
   })
 }
@@ -51,7 +51,7 @@ export const selectFile = (options?: SelectFileOptions): Promise<File[]> => {
  */
 export const selectImage = async (options?: ImageSelectOptions): Promise<ImageSelectResult> => {
   const {
-    accept: acceptType = accept,
+    accept = DEFAULT_ACCEPT,
     maxFileSize = 2 * 1024 * 1024,
     minSize,
     maxSize = 5000,
@@ -62,16 +62,20 @@ export const selectImage = async (options?: ImageSelectOptions): Promise<ImageSe
   } = options || {}
 
   // 选择文件
-  let [file] = await selectFile({ accept: acceptType })
+  let [file] = await selectFile({ accept })
+
+  if (!file) {
+    throw new AvatarError('NO_IMAGE_SELECTED')
+  }
 
   // 非图片校验
   if (!file.type.startsWith('image/')) {
-    throw new SelectAvatarError('NOT_IMAGE_FILE')
+    throw new AvatarError('NO_IMAGE_SELECTED')
   }
 
   // 文件大小校验
   if (file.size > maxFileSize) {
-    throw new SelectAvatarError('IMAGE_FILE_TOO_LARGE')
+    throw new AvatarError('IMAGE_FILE_TOO_LARGE')
   }
 
   // 获取原始尺寸
@@ -91,13 +95,13 @@ export const selectImage = async (options?: ImageSelectOptions): Promise<ImageSe
   } else {
     // 最小尺寸校验
     if (typeof minSize === 'number' && Math.min(dimensions.width, dimensions.height) < minSize) {
-      throw new SelectAvatarError('IMAGE_TOO_SMALL')
+      throw new AvatarError('IMAGE_TOO_SMALL')
     }
 
     // 缩放处理
     if (Math.max(dimensions.width, dimensions.height) > maxSize) {
       if (!resizeToMax) {
-        throw new SelectAvatarError('IMAGE_TOO_LARGE')
+        throw new AvatarError('IMAGE_TOO_LARGE')
       }
       // 计算缩放比例
       const scale = maxSize / Math.max(dimensions.width, dimensions.height)
@@ -149,7 +153,7 @@ export const resizeImage = async (
   canvas.width = dimensions.width
   canvas.height = dimensions.height
   const ctx = canvas.getContext('2d')
-  if (!ctx) throw new SelectAvatarError('CANVAS_CONTEXT_NOT_DEFINED')
+  if (!ctx) throw new AvatarError('CANVAS_CONTEXT_NOT_DEFINED')
   ctx.drawImage(img, 0, 0, dimensions.width, dimensions.height)
   const blob = await canvasToBlob(canvas, type || file.type, quality)
   return new File([blob], file.name, { type: type || file.type })
@@ -168,7 +172,7 @@ export const loadImage = async (url: string, revoke = false) => {
       if (revoke) {
         URL.revokeObjectURL(img.src)
       }
-      reject(new SelectAvatarError('IMAGE_LOAD_FAILED'))
+      reject(new AvatarError('IMAGE_LOAD_FAILED'))
     }
     img.src = url
   })
@@ -181,7 +185,7 @@ export const canvasToBlob = (canvas: HTMLCanvasElement, type?: string, quality?:
         if (blob) {
           resolve(blob)
         } else {
-          reject(new SelectAvatarError('CANVAS_TO_BLOB_FAILED'))
+          reject(new AvatarError('CANVAS_TO_BLOB_FAILED'))
         }
       },
       type,
@@ -197,7 +201,7 @@ export const blobToBase64 = (blob: Blob) => {
       if (typeof reader.result === 'string') {
         resolve(reader.result)
       } else {
-        reject(new SelectAvatarError('BLOB_TO_BASE64_FAILED'))
+        reject(new AvatarError('BLOB_TO_BASE64_FAILED'))
       }
     }
     reader.onerror = (error) => {
@@ -211,10 +215,10 @@ export const isVectorImage = (file: File): boolean => {
   return file.type.startsWith('image/svg')
 }
 
-export const cropper = async <T extends File | string = File | string>(
+export const crop = async <T extends File | string = File | string>(
   info: ImageInfo,
   pos: Position,
-  options?: CropperOptions,
+  options?: CropOptions,
 ): Promise<T> => {
   const {
     format = 'file',
@@ -243,7 +247,7 @@ export const cropper = async <T extends File | string = File | string>(
   const canvas = document.createElement('canvas')
   const ctx = canvas.getContext('2d')
 
-  if (!ctx) throw new SelectAvatarError('CANVAS_CONTEXT_NOT_DEFINED')
+  if (!ctx) throw new AvatarError('CANVAS_CONTEXT_NOT_DEFINED')
 
   let s = pos.viewSize / pos.imageScale
   const x = (pos.viewX - pos.imageX) / pos.imageScale
@@ -305,4 +309,47 @@ export const getPointOffset = (value: SimplePosition, pos: Position, position: P
       break
   }
   return v
+}
+
+export const resolveSize = (value: {
+  size?: number | 'full'
+  width?: number | 'full'
+  height?: number | 'full'
+}): { width?: number | 'full'; height?: number | 'full' } => {
+  return {
+    width: value.width || value.size,
+    height: value.height || value.size,
+  }
+}
+
+export const resolveViewSize = (value: number | undefined, defaultValue: number, pos: Position) => {
+  if (!value || value <= 0) {
+    value = defaultValue
+  }
+
+  if (value <= 1) {
+    return (value = Math.min(pos.viewportWidth, pos.viewportHeight) * value)
+  } else {
+    return value
+  }
+}
+
+export const resolveStep = (
+  value: number | undefined,
+  defaultValue: number,
+  baseScale: number,
+  pos: Position,
+) => {
+  if (!value || value <= 0) {
+    value = defaultValue
+  }
+  if (value < 1) {
+    value = pos.viewSize * value
+  }
+  return baseScale * (value / pos.viewSize)
+}
+
+export const isValidBorder = (border?: boolean | number) => {
+  border = Number(border)
+  return !Number.isNaN(border) && border > 0
 }

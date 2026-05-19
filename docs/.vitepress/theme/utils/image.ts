@@ -1,5 +1,6 @@
 import { withBase } from 'vitepress'
-import { ImageSelectResult, loadImage, canvasToBlob } from 'vue-select-avatar'
+import { loadImage, canvasToBlob } from 'vue-select-avatar'
+import type { ImageSelectResult } from 'vue-select-avatar'
 
 export const loadCatImage = async (): Promise<ImageSelectResult> => {
   const _document = globalThis.document

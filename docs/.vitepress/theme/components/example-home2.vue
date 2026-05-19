@@ -1,15 +1,14 @@
 <script setup lang="ts">
-import 'vue-select-avatar/style.css'
-import { Viewport, Preview } from 'vue-select-avatar'
-
 import { onMounted, ref } from 'vue'
+
+import { Viewport, Preview } from 'vue-select-avatar'
 import { loadCatImage } from '../utils/image'
 
 const viewportRef = ref<InstanceType<typeof Viewport>>()
 
 onMounted(async () => {
   const res = await loadCatImage()
-  viewportRef.value?.initPosition(res)
+  viewportRef.value?.positionInit(res)
 })
 </script>
 
@@ -17,7 +16,7 @@ onMounted(async () => {
   <div style="display: flex; flex-direction: column; align-items: center; margin-top: 50px">
     <div style="display: flex; gap: 40px; align-items: center">
       <div style="position: relative">
-        <Viewport ref="viewportRef" :size="180" fixed-image />
+        <Viewport ref="viewportRef" :size="180" mode="fixed-image" />
         <button
           style="
             position: absolute;

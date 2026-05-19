@@ -1,11 +1,8 @@
 import { ref } from 'vue'
-import { useResizeView } from './resize'
 import { getPointOffset } from '../utils'
-import { useCheckImageBack, useCheckViewPosition } from './check'
-import type { HookOptions } from './types'
-import type { PointPosition, SimplePosition } from '../types'
+import type { HookContext, PointPosition, SimplePosition } from '../types'
 
-export const useTouchHandles = (options: HookOptions) => {
+export const useTouchHandles = (context: HookContext) => {
   const {
     info,
     imageMoving,
@@ -16,11 +13,7 @@ export const useTouchHandles = (options: HookOptions) => {
     viewResizing,
     props,
     viewMoving,
-  } = options
-
-  const { checkImageBack } = useCheckImageBack(options)
-  const { resizeView } = useResizeView(options)
-  const { checkViewPosition } = useCheckViewPosition(options)
+  } = context
 
   const touchStart = ref<SimplePosition>()
   const touchStartDistance = ref<number>()
@@ -30,7 +23,7 @@ export const useTouchHandles = (options: HookOptions) => {
   const startViewPos = ref<SimplePosition>({ x: 0, y: 0 })
   const pointOffset = ref<SimplePosition>({ x: 0, y: 0 })
   const handleTouchStart = (e: TouchEvent) => {
-    if (props.fixedImage) return handleViewTouchStart(e)
+    if (props.mode === 'fixed-image') return handleViewTouchStart(e)
     if (!info.value) return
 
     e.preventDefault()
@@ -38,19 +31,21 @@ export const useTouchHandles = (options: HookOptions) => {
 
     if (e.touches.length === 1) {
       // 单指开始
-      const touch = e.touches[0]
+      const touch = e.touches[0]!
       touchStart.value = { x: touch.clientX, y: touch.clientY }
       isTwoFingerZoom.value = false
     } else if (e.touches.length >= 2) {
+      const touch1 = e.touches[0]!
+      const touch2 = e.touches[1]!
       // 双指开始
       isTwoFingerZoom.value = true
       touchCenter.value = {
-        x: (e.touches[0].clientX + e.touches[1].clientX) / 2,
-        y: (e.touches[0].clientY + e.touches[1].clientY) / 2,
+        x: (touch1.clientX + touch2.clientX) / 2,
+        y: (touch1.clientY + touch2.clientY) / 2,
       }
       touchStartDistance.value = Math.hypot(
-        e.touches[0].clientX - e.touches[1].clientX,
-        e.touches[0].clientY - e.touches[1].clientY,
+        touch1.clientX - touch2.clientX,
+        touch1.clientY - touch2.clientY,
       )
     }
 
@@ -69,7 +64,7 @@ export const useTouchHandles = (options: HookOptions) => {
 
     if (!isTwoFingerZoom.value) {
       // 单指移动
-      const touch = e.touches[0]
+      const touch = e.touches[0]!
       if (touchStart.value) {
         const dx = touch.clientX - touchStart.value.x
         const dy = touch.clientY - touchStart.value.y
@@ -78,16 +73,19 @@ export const useTouchHandles = (options: HookOptions) => {
         touchStart.value = { x: touch.clientX, y: touch.clientY }
       }
     } else if (e.touches.length >= 2) {
+      const touch1 = e.touches[0]!
+      const touch2 = e.touches[1]!
+
       // 双指操作：同时缩放和平移
       const currentDistance = Math.hypot(
-        e.touches[0].clientX - e.touches[1].clientX,
-        e.touches[0].clientY - e.touches[1].clientY,
+        touch1.clientX - touch2.clientX,
+        touch1.clientY - touch2.clientY,
       )
 
       // 计算当前双指中心点
       const currentCenter = {
-        x: (e.touches[0].clientX + e.touches[1].clientX) / 2,
-        y: (e.touches[0].clientY + e.touches[1].clientY) / 2,
+        x: (touch1.clientX + touch2.clientX) / 2,
+        y: (touch1.clientY + touch2.clientY) / 2,
       }
 
       // 计算中心点偏移量
@@ -128,7 +126,7 @@ export const useTouchHandles = (options: HookOptions) => {
 
     if (e.touches.length === 1) {
       // 切换到单指拖动
-      const touch = e.touches[0]
+      const touch = e.touches[0]!
       touchStart.value = { x: touch.clientX, y: touch.clientY }
       isTwoFingerZoom.value = false
     }
@@ -137,7 +135,7 @@ export const useTouchHandles = (options: HookOptions) => {
     touchStartDistance.value = void 0
     isTwoFingerZoom.value = false
     imageMoving.value = false
-    checkImageBack()
+    context.checkImageBack()
     document.removeEventListener('touchmove', handleTouchMove)
     document.removeEventListener('touchend', handleTouchEnd)
     document.removeEventListener('touchcancel', handleTouchCancel)
@@ -156,11 +154,12 @@ export const useTouchHandles = (options: HookOptions) => {
     viewResizing.value = true
     pointPosition.value = position
 
+    const touch = e.touches[0]!
     const { left, top } = viewportRef.value.getBoundingClientRect()
     viewportPos.value.x = left
     viewportPos.value.y = top
-    touchCenter.value.x = e.touches[0].clientX - left
-    touchCenter.value.y = e.touches[0].clientY - top
+    touchCenter.value.x = touch.clientX - left
+    touchCenter.value.y = touch.clientY - top
 
     pointOffset.value = getPointOffset(touchCenter.value, pos, position)
     touchCenter.value.x -= pointOffset.value.x
@@ -177,15 +176,17 @@ export const useTouchHandles = (options: HookOptions) => {
     e.preventDefault()
     e.stopPropagation()
 
+    const touch = e.touches[0]!
+
     const newPos = {
-      x: e.touches[0].clientX - viewportPos.value.x,
-      y: e.touches[0].clientY - viewportPos.value.y,
+      x: touch.clientX - viewportPos.value.x,
+      y: touch.clientY - viewportPos.value.y,
     }
 
     newPos.x -= pointOffset.value.x
     newPos.y -= pointOffset.value.y
 
-    resizeView(newPos)
+    context.resizeView(newPos)
 
     touchCenter.value = newPos
   }
@@ -204,15 +205,17 @@ export const useTouchHandles = (options: HookOptions) => {
   }
 
   const handleViewTouchStart = (e: TouchEvent) => {
-    if (!props.fixedImage || !viewportRef.value) return
+    if (props.mode === 'fixed-view' || !viewportRef.value) return
 
     e.preventDefault()
     e.stopPropagation()
 
     viewMoving.value = true
 
-    touchCenter.value.x = e.touches[0].clientX
-    touchCenter.value.y = e.touches[0].clientY
+    const touch = e.touches[0]!
+
+    touchCenter.value.x = touch.clientX
+    touchCenter.value.y = touch.clientY
     startViewPos.value.x = pos.viewX
     startViewPos.value.y = pos.viewY
 
@@ -225,10 +228,12 @@ export const useTouchHandles = (options: HookOptions) => {
     e.preventDefault()
     e.stopPropagation()
 
-    pos.viewX = e.touches[0].clientX - touchCenter.value.x + startViewPos.value.x
-    pos.viewY = e.touches[0].clientY - touchCenter.value.y + startViewPos.value.y
+    const touch = e.touches[0]!
 
-    checkViewPosition()
+    pos.viewX = touch.clientX - touchCenter.value.x + startViewPos.value.x
+    pos.viewY = touch.clientY - touchCenter.value.y + startViewPos.value.y
+
+    context.checkViewPosition()
   }
 
   const handleViewTouchEnd = (e: TouchEvent) => {

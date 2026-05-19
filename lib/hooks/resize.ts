@@ -1,10 +1,9 @@
-import type { HookOptions } from './types'
-import type { SimplePosition } from '../types'
+import type { HookContext, SimplePosition } from '../types'
 
-export const useResizeView = (options: HookOptions) => {
-  const { pos, pointPosition, props, info } = options
+export const useResizeView = (context: HookContext) => {
+  const { pos, pointPosition, props, info } = context
 
-  const resizeView = (newPos: SimplePosition) => {
+  context.resizeView = (newPos: SimplePosition) => {
     // 等比例缩放
     switch (pointPosition.value) {
       case 'top-left':
@@ -17,10 +16,10 @@ export const useResizeView = (options: HookOptions) => {
         pos.viewX += n
         pos.viewY += n
         pos.viewSize -= n
-        if (pos.viewSize < props.minViewSize!) {
-          pos.viewX += pos.viewSize - props.minViewSize!
-          pos.viewY += pos.viewSize - props.minViewSize!
-          pos.viewSize = props.minViewSize!
+        if (pos.viewSize < props.minView!) {
+          pos.viewX += pos.viewSize - props.minView!
+          pos.viewY += pos.viewSize - props.minView!
+          pos.viewSize = props.minView!
         }
         if (info.value && pos.viewX < pos.imageX) {
           pos.viewSize -= pos.imageX - pos.viewX
@@ -39,16 +38,16 @@ export const useResizeView = (options: HookOptions) => {
         if (newPos.x >= pos.viewX && newPos.x <= pos.viewX + pos.viewSize - dy2) {
           pos.viewY += dy2
           pos.viewSize -= dy2
-          if (pos.viewSize < props.minViewSize!) {
-            pos.viewY += pos.viewSize - props.minViewSize!
-            pos.viewSize = props.minViewSize!
+          if (pos.viewSize < props.minView!) {
+            pos.viewY += pos.viewSize - props.minView!
+            pos.viewSize = props.minView!
           }
         } else {
           pos.viewY -= dx2
           pos.viewSize += dx2
-          if (pos.viewSize < props.minViewSize!) {
-            pos.viewY += pos.viewSize - props.minViewSize!
-            pos.viewSize = props.minViewSize!
+          if (pos.viewSize < props.minView!) {
+            pos.viewY += pos.viewSize - props.minView!
+            pos.viewSize = props.minView!
           }
         }
         if (info.value && pos.viewY < pos.imageY) {
@@ -66,16 +65,16 @@ export const useResizeView = (options: HookOptions) => {
         if (newPos.x >= pos.viewX - dy3 && newPos.x <= pos.viewX - dy3 + (pos.viewSize + dy3)) {
           pos.viewX -= dy3
           pos.viewSize += dy3
-          if (pos.viewSize < props.minViewSize!) {
-            pos.viewX = pos.viewX + pos.viewSize - props.minViewSize!
-            pos.viewSize = props.minViewSize!
+          if (pos.viewSize < props.minView!) {
+            pos.viewX = pos.viewX + pos.viewSize - props.minView!
+            pos.viewSize = props.minView!
           }
         } else {
           pos.viewX += dx3
           pos.viewSize -= dx3
-          if (pos.viewSize < props.minViewSize!) {
-            pos.viewX = pos.viewX + pos.viewSize - props.minViewSize!
-            pos.viewSize = props.minViewSize!
+          if (pos.viewSize < props.minView!) {
+            pos.viewX = pos.viewX + pos.viewSize - props.minView!
+            pos.viewSize = props.minView!
           }
         }
         if (info.value && pos.viewX < pos.imageX) {
@@ -98,8 +97,8 @@ export const useResizeView = (options: HookOptions) => {
         } else {
           pos.viewSize += dx4
         }
-        if (pos.viewSize < props.minViewSize!) {
-          pos.viewSize = props.minViewSize!
+        if (pos.viewSize < props.minView!) {
+          pos.viewSize = props.minView!
         }
         if (info.value && pos.viewX + pos.viewSize > pos.imageX + pos.imageWidth * pos.imageScale) {
           pos.viewSize = pos.imageX + pos.imageWidth * pos.imageScale - pos.viewX
@@ -113,6 +112,4 @@ export const useResizeView = (options: HookOptions) => {
         break
     }
   }
-
-  return { resizeView }
 }

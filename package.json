@@ -1,94 +1,89 @@
 {
   "name": "vue-select-avatar",
-  "version": "3.0.0-alpha.5",
-  "description": "基于 vue 选择头像",
-  "author": "xiangheng08",
-  "license": "MIT",
+  "version": "1.0.0-alpha.6",
+  "description": "一个头像集选择/裁剪的组件库",
   "keywords": [
-    "vue",
-    "vue3",
     "avatar",
-    "select",
+    "avatar-crop",
     "avatar-select",
-    "vue-select",
+    "crop",
+    "select",
     "select-avatar",
-    "选择头像",
+    "vue-avatar",
     "头像",
-    "选择"
+    "裁剪",
+    "选择头像"
   ],
   "homepage": "https://github.com/xiangheng08/vue-select-avatar",
+  "bugs": {
+    "url": "https://github.com/xiangheng08/vue-select-avatar/issues"
+  },
+  "license": "MIT",
+  "author": "xiangheng08",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/xiangheng08/vue-select-avatar"
   },
-  "bugs": {
-    "url": "https://github.com/xiangheng08/vue-select-avatar/issues"
-  },
-  "type": "module",
-  "types": "./dist/index.d.ts",
   "files": [
     "dist"
   ],
-  "main": "./dist/index.cjs",
-  "module": "./dist/index.js",
-  "exports": {
-    ".": {
-      "import": "./dist/index.js",
-      "require": "./dist/index.cjs"
-    },
-    "./errorMessage_en.js": {
-      "import": "./dist/errorMessage_en.js",
-      "require": "./dist/errorMessage_en.cjs"
-    },
-    "./style.css": "./dist/vue-select-avatar.css"
-  },
+  "type": "module",
+  "main": "./index.js",
+  "module": "./index.js",
+  "types": "./dist/index.d.ts",
   "scripts": {
     "dev": "vite",
+    "dev:lib": "tsdown --watch --no-clean",
     "build": "run-p type-check \"build-only {@}\" --",
+    "build:lib": "tsdown --minify",
     "preview": "vite preview",
-    "test:unit": "vitest",
     "build-only": "vite build",
     "type-check": "vue-tsc --build",
-    "lint": "eslint . --fix",
-    "format": "prettier --write src/",
+    "lint": "run-s lint:*",
+    "lint:oxlint": "oxlint . --fix",
+    "lint:eslint": "eslint . --fix --cache",
+    "format": "oxfmt .",
+    "format:lib": "oxfmt lib/",
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",
     "docs:preview": "vitepress preview docs",
-    "pub": "run-s build publish-npm",
-    "publish-npm": "npm publish --access public"
+    "publish-npm": "npm publish --provenance --access public --registry https://registry.npmjs.com/",
+    "pub": "run-s build:lib publish-npm"
+  },
+  "devDependencies": {
+    "@tsconfig/node24": "^24.0.4",
+    "@tsdown/css": "^0.22.0",
+    "@types/node": "^24.12.2",
+    "@vitejs/plugin-vue": "^6.0.6",
+    "@vue/eslint-config-typescript": "^14.7.0",
+    "@vue/tsconfig": "^0.9.1",
+    "element-plus": "^2.14.0",
+    "eslint": "^10.2.1",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-oxlint": "~1.60.0",
+    "eslint-plugin-vue": "~10.8.0",
+    "jiti": "^2.6.1",
+    "npm-run-all2": "^8.0.4",
+    "oxfmt": "^0.45.0",
+    "oxlint": "~1.60.0",
+    "sass": "^1.99.0",
+    "tsdown": "^0.22.0",
+    "typescript": "~6.0.0",
+    "unplugin-element-plus": "^0.11.2",
+    "unplugin-vue": "^7.2.0",
+    "vite": "^8.0.8",
+    "vite-plugin-vue-devtools": "^8.1.1",
+    "vitepress": "^1.6.4",
+    "vitepress-plugin-group-icons": "^1.7.5",
+    "vue": "^3.5.32",
+    "vue-router": "^5.0.7",
+    "vue-select-avatar": "link:",
+    "vue-tsc": "^3.2.6"
   },
   "peerDependencies": {
     "vue": "^3.5.13 <4.0.0"
   },
-  "devDependencies": {
-    "@tsconfig/node22": "^22.0.2",
-    "@types/jsdom": "^21.1.7",
-    "@types/node": "^22.15.21",
-    "@vitejs/plugin-vue": "^5.2.3",
-    "@vitest/eslint-plugin": "^1.1.39",
-    "@vue/eslint-config-prettier": "^10.2.0",
-    "@vue/eslint-config-typescript": "^14.5.0",
-    "@vue/test-utils": "^2.4.6",
-    "@vue/tsconfig": "^0.7.0",
-    "element-plus": "^2.9.11",
-    "eslint": "^9.22.0",
-    "eslint-plugin-vue": "~10.0.0",
-    "jiti": "^2.4.2",
-    "jsdom": "^26.0.0",
-    "npm-run-all2": "^7.0.2",
-    "prettier": "3.5.3",
-    "sass": "^1.89.0",
-    "typescript": "~5.8.0",
-    "unplugin-element-plus": "^0.10.0",
-    "vite": "^6.2.4",
-    "vite-plugin-dts": "^4.5.4",
-    "vite-plugin-vue-devtools": "^7.7.2",
-    "vitepress": "^1.6.3",
-    "vitepress-plugin-group-icons": "^1.5.5",
-    "vitest": "^3.1.1",
-    "vue": "^3.5.13",
-    "vue-select-avatar": "link:",
-    "vue-tsc": "^2.2.8"
-  },
-  "packageManager": "pnpm@9.12.3"
+  "engines": {
+    "node": "^20.19.0 || >=22.12.0"
+  }
 }

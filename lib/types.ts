@@ -1,5 +1,11 @@
-import type Viewport from './Viewport.vue'
+import type { ComputedRef, Reactive, Ref } from 'vue'
+import type Viewport from './components/Viewport.vue'
 
+// #region ViewportInstance
+export type ViewportInstance = InstanceType<typeof Viewport>
+// #endregion ViewportInstance
+
+// #region Position
 /**
  * 位置信息
  */
@@ -15,107 +21,165 @@ export interface Position {
   imageHeight: number
   imageScale: number
 }
+// #endregion Position
 
 export interface SimplePosition {
   x: number
   y: number
 }
 
+// #region ViewportProps
 export interface ViewportProps {
-  size?: number
-  width?: number
-  height?: number
+  /**
+   * 视口尺寸（同时设置宽高）
+   *
+   * @default 300
+   */
+  size?: number | 'full'
+  /**
+   * 视口宽度（覆盖size）
+   */
+  width?: number | 'full'
+  /**
+   * 视口高度（覆盖size）
+   */
+  height?: number | 'full'
   /**
    * 图片信息
    */
   info?: ImageInfo
   /**
-   * 观察窗口大小
+   * 观察窗口大小（<=1 表示比例，>1 表示像素值）
+   *
+   * @default 0.6
    */
-  viewSize?: number
+  view?: number
   /**
    * 是否为网格背景
+   *
+   * @default false
    */
   grid?: boolean
   /**
-   * 缩放步长
+   * 缩放步长（<1 表示比例，>=1 表示像素值）
+   *
+   * @default 0.05
    */
-  scaleStep?: number
+  step?: number
   /**
-   * 缩放步长（按下Ctrl键时）（设置为0时，则不生效）
+   * 缩放步长（按下Ctrl键时，设置为0时，则不生效，<1 表示比例，>=1 表示像素值）
+   *
+   * @default 0.02
    */
-  ctrlScaleStep?: number
+  ctrlStep?: number
   /**
-   * 缩放步长（按下Shift键时）（设置为0时，则不生效）
+   * 缩放步长（按下Shift键时，设置为0时，则不生效，<1 表示比例，>=1 表示像素值）
+   *
+   * @default 2
    */
-  shiftScaleStep?: number
+  shiftStep?: number
   /**
    * 滚轮反向
+   *
+   * @default false
    */
-  wheelReverse?: boolean
+  reverse?: boolean
   /**
-   * 图片固定模式：true=固定图片移动视窗，false=固定视窗移动图片（默认）
+   * 最小观察窗口尺寸（mode=fixed-image 时生效）
+   *
+   * @default 10
    */
-  fixedImage?: boolean
+  minView?: number
   /**
-   * 最小观察窗口尺寸
+   * 图片边距（mode=fixed-image 时生效）
+   *
+   * @default 10
    */
-  minViewSize?: number
-  /**
-   * 图片边距
-   */
-  imagePadding?: number
+  padding?: number
   /**
    * 方向键移动
+   *
+   * @default true
    */
-  directionKey?: boolean
+  arrow?: boolean
   /**
    * wasd 键移动
+   *
+   * @default true
    */
-  wasdKey?: boolean
+  wasd?: boolean
   /**
-   * 是否强制使用双层DOM
+   * 遮罩实现方式
+   *
+   * - 'clip'：使用 clip-path
+   * - 'double'：使用双层图片
+   *
+   * @default 'clip'
    */
-  forceDoubleLayer?: boolean
+  mask?: 'clip' | 'double'
   /**
-   * 使用阴影实现观察窗镂空效果
+   * 移动模式：'fixed-view'=观察窗固定图片移动，'fixed-image'=图片固定观察窗移动
+   *
+   * @default 'fixed-view'
    */
-  shadowMask?: boolean
+  mode?: 'fixed-view' | 'fixed-image'
   /**
-   * 尺寸是否显示 // TODO 待实现
+   * 是否显示观察窗边框
+   *
+   * @default false
    */
-  showSize?: boolean
+  border?: boolean | number
 }
+// #endregion ViewportProps
 
+// #region ViewportExposes
+export interface ViewportExposes {
+  /**
+   * 选择图片
+   * @param options 选择图片选项
+   */
+  select: (options?: ImageSelectOptions) => Promise<void>
+  /**
+   * 裁剪图片
+   * @param options 裁剪选项
+   * @returns 裁剪后的图片信息
+   */
+  crop: <T extends File | string = string | File>(options?: CropOptions) => Promise<T>
+  /**
+   * 初始化位置信息
+   * @param res 图片信息
+   */
+  positionInit: (res: ImageSelectResult) => void
+}
+// #endregion ViewportExposes
+
+// #region ImageSelectOptions
 export interface ImageSelectOptions {
   /**
    * 允许的文件类型（参考input的accept属性）
+   *
+   * @default DEFAULT_ACCEPT
    */
   accept?: string
-
   /**
    * 最大文件大小（单位：字节）
-   * @default 2 * 1024 * 1024 // 2MB
+   * @default 2 * 1024 * 1024
    */
   maxFileSize?: number
-
   /**
    * 图片最小尺寸（宽高任一小于该值则无效）
    */
   minSize?: number
-
   /**
    * 图片最大尺寸（宽高任一超过该值则无效）
    * @default 5000
    */
   maxSize?: number
-
   /**
    * 超过最大尺寸时是否等比例缩放到最大尺寸
    * @default false
    */
   resizeToMax?: boolean
-
   /**
    * 是否启用压缩
    * - true：全部压缩
@@ -123,37 +187,39 @@ export interface ImageSelectOptions {
    * @default false
    */
   compress?: boolean | number
-
   /**
    * 压缩质量（0-1）
    * @default 0.8
    */
   quality?: number
-
   /**
    * 矢量图最小尺寸
    * @default 1024
    */
   minVectorSize?: number
 }
+// #endregion ImageSelectOptions
 
+// #region ImageSelectResult
 export interface ImageSelectResult {
   file: File
   width: number
   height: number
 }
+// #endregion ImageSelectResult
 
 export interface ImageInfo extends ImageSelectResult {
   url?: string
 }
 
-export type CropperFormat = 'file' | 'base64'
+export type CropFormat = 'file' | 'base64'
 
-export interface CropperOptions {
+// #region CropOptions
+export interface CropOptions {
   /**
    * 数据格式
    */
-  format?: CropperFormat
+  format?: CropFormat
   /**
    * 输出图片尺寸
    */
@@ -185,12 +251,83 @@ export interface CropperOptions {
    */
   backgroundColor?: string
 }
+// #endregion CropOptions
 
 export type PointPosition = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right'
 
+// #region PreviewProps
 export interface PreviewProps {
-  size?: number
-  viewportRef?: InstanceType<typeof Viewport>
+  /**
+   * 预览尺寸
+   *
+   * @default 180
+   */
+  size?: number | 'full'
+  /**
+   * 视口实例
+   */
+  viewportRef?: ViewportInstance
+  /**
+   * 是否圆形
+   */
   round?: boolean
+  /**
+   * 背景颜色
+   */
   bg?: string
+}
+// #endregion PreviewProps
+
+// #region ErrorCode
+type ErrorCode =
+  | 'UNKNOWN' // 未知错误
+  | 'CANCEL' // 取消
+  | 'NOT_IMAGE_FILES' // 非图片文件
+  | 'IMAGE_FILE_TOO_LARGE' // 图片文件过大
+  | 'IMAGE_TOO_SMALL' // 图片尺寸过小
+  | 'IMAGE_TOO_LARGE' // 图片尺寸过大
+  | 'IMAGE_LOAD_FAILED' // 图片加载失败
+  | 'CANVAS_TO_BLOB_FAILED' // canvas 转 blob 失败
+  | 'BLOB_TO_BASE64_FAILED' // blob 转 base64 失败
+  | 'CANVAS_CONTEXT_NOT_DEFINED' // canvas context 未定义
+  | 'NO_IMAGE_SELECTED' // 未选择图片
+// #endregion ErrorCode
+
+/**
+ * 多语言key
+ */
+export type Locale = {
+  [K in ErrorCode]: string
+}
+
+export interface HookContext {
+  props: ViewportProps
+  pos: Reactive<Position>
+  info: Ref<ImageInfo | undefined>
+  imageMoving: Ref<boolean, boolean>
+  viewMoving: Ref<boolean, boolean>
+  viewResizing: Ref<boolean, boolean>
+  viewportRef: Ref<HTMLElement | undefined>
+  minImageScale: Ref<number>
+  step: Ref<number>
+  ctrlStep: Ref<number>
+  shiftStep: Ref<number>
+  pressCtrl: Ref<boolean>
+  pressShift: Ref<boolean>
+  isClipPathSupported: Ref<boolean>
+  pointPosition: Ref<PointPosition | undefined>
+  backing: Ref<boolean>
+  elEmitter: HTMLElement
+  showViewLayer: ComputedRef<boolean>
+  checkImageBack: (transition?: boolean) => void
+  checkViewPosition: () => void
+  resizeView: (newPos: SimplePosition) => void
+  broadcastInfo: () => void
+  broadcastPos: () => void
+}
+
+type NativeType = null | undefined | number | string | boolean | symbol | Function
+type InferDefault<P, T> = ((props: P) => T & {}) | (T extends NativeType ? T : never)
+export type InferDefaults<T> = {
+  [K in keyof T]?: InferDefault<T, T[K]>
 }
