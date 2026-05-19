@@ -58,7 +58,7 @@ importers:
         version: 1.99.0
       tsdown:
         specifier: ^0.22.0
-        version: 0.22.0(@tsdown/css@0.22.0)(typescript@6.0.3)(vue-tsc@3.2.8(typescript@6.0.3))
+        version: 0.22.0(@tsdown/css@0.22.0)(typescript@6.0.3)(unrun@0.3.0)(vue-tsc@3.2.8(typescript@6.0.3))
       typescript:
         specifier: ~6.0.0
         version: 6.0.3
@@ -68,6 +68,9 @@ importers:
       unplugin-vue:
         specifier: ^7.2.0
         version: 7.2.0(@types/node@24.12.4)(jiti@2.7.0)(sass@1.99.0)(vue@3.5.34(typescript@6.0.3))(yaml@2.9.0)
+      unrun:
+        specifier: ^0.3.0
+        version: 0.3.0
       vite:
         specifier: ^8.0.8
         version: 8.0.12(@types/node@24.12.4)(jiti@2.7.0)(sass@1.99.0)(yaml@2.9.0)
@@ -2675,6 +2678,16 @@ packages:
     resolution: {integrity: sha512-0Mqk3AT2TZCXWKdcoaufeXNukv2mTrEZExeXlHIOZXdqYoHHr4n51pymnwV8x2BOVxwXbK2HLlI7usrqMpycdg==, tarball: https://registry.npmjs.org/unplugin/-/unplugin-3.0.0.tgz}
     engines: {node: ^20.19.0 || >=22.12.0}
 
+  unrun@0.3.0:
+    resolution: {integrity: sha512-5xw2AIVS2WR9Lqhz76qDIQLxipKRidf7Nq+Iz5SZ8shk1OmRlxnc6FyI/1Q2m99WLj6cbqaKFdESfWE99KPzlA==}
+    engines: {node: ^22.13.0 || >=24.0.0}
+    hasBin: true
+    peerDependencies:
+      synckit: ^0.11.11
+    peerDependenciesMeta:
+      synckit:
+        optional: true
+
   untyped@2.0.0:
     resolution: {integrity: sha512-nwNCjxJTjNuLCgFr42fEak5OcLuB3ecca+9ksPFNvtfYSLpjf+iJqSIaSnIile6ZPbKYxI5k2AfXqeopGudK/g==}
     hasBin: true
@@ -3850,7 +3863,7 @@ snapshots:
       lightningcss: 1.32.0
       postcss-load-config: 6.0.1(jiti@2.7.0)(postcss@8.5.14)(yaml@2.9.0)
       rolldown: 1.0.0
-      tsdown: 0.22.0(@tsdown/css@0.22.0)(typescript@6.0.3)(vue-tsc@3.2.8(typescript@6.0.3))
+      tsdown: 0.22.0(@tsdown/css@0.22.0)(typescript@6.0.3)(unrun@0.3.0)(vue-tsc@3.2.8(typescript@6.0.3))
     optionalDependencies:
       postcss: 8.5.14
       sass: 1.99.0
@@ -5228,7 +5241,7 @@ snapshots:
     dependencies:
       typescript: 6.0.3
 
-  tsdown@0.22.0(@tsdown/css@0.22.0)(typescript@6.0.3)(vue-tsc@3.2.8(typescript@6.0.3)):
+  tsdown@0.22.0(@tsdown/css@0.22.0)(typescript@6.0.3)(unrun@0.3.0)(vue-tsc@3.2.8(typescript@6.0.3)):
     dependencies:
       ansis: 4.3.0
       cac: 7.0.0
@@ -5248,6 +5261,7 @@ snapshots:
     optionalDependencies:
       '@tsdown/css': 0.22.0(jiti@2.7.0)(postcss@8.5.14)(sass@1.99.0)(tsdown@0.22.0)(yaml@2.9.0)
       typescript: 6.0.3
+      unrun: 0.3.0
     transitivePeerDependencies:
       - '@ts-macro/tsc'
       - '@typescript/native-preview'
@@ -5363,6 +5377,10 @@ snapshots:
       '@jridgewell/remapping': 2.3.5
       picomatch: 4.0.4
       webpack-virtual-modules: 0.6.2
+
+  unrun@0.3.0:
+    dependencies:
+      rolldown: 1.0.0
 
   untyped@2.0.0:
     dependencies:
