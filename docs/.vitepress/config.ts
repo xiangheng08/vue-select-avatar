@@ -76,4 +76,11 @@ export default defineConfig({
       exclude: ['vue-select-avatar'],
     },
   },
+  vue: {
+    template: {
+      compilerOptions: {
+        isCustomElement: (tag) => tag.startsWith('xh-'),
+      },
+    },
+  },
 })

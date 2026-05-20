@@ -57,6 +57,7 @@
     "@vitejs/plugin-vue": "^6.0.6",
     "@vue/eslint-config-typescript": "^14.7.0",
     "@vue/tsconfig": "^0.9.1",
+    "@xiangheng08/qrcode": "^0.0.2",
     "element-plus": "^2.14.0",
     "eslint": "^10.2.1",
     "eslint-config-prettier": "^10.1.8",

@@ -6,6 +6,7 @@ import DefaultTheme from 'vitepress/theme'
 import './style.css'
 import 'virtual:group-icons.css'
 import 'element-plus/theme-chalk/dark/css-vars.css'
+import '@xiangheng08/qrcode'
 
 import ExampleHome1 from './components/example-home1.vue'
 import ExampleHome2 from './components/example-home2.vue'

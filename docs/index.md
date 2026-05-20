@@ -53,3 +53,11 @@ yarn add vue-select-avatar
 <ClientOnly>
   <ExampleHome2 />
 </ClientOnly>
+
+<script setup>
+import PreviewWechatQRCode from "./components/previews/PreviewWechatQRCode.vue";
+</script>
+
+<ClientOnly>
+<PreviewWechatQRCode />
+</ClientOnly>
