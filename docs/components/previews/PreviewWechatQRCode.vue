@@ -1,6 +1,11 @@
 <script setup lang="ts">
 import { withBase } from 'vitepress'
-const url = location.origin + withBase('/preview-wechat')
+import { onMounted, ref } from 'vue'
+const url = ref('')
+
+onMounted(() => {
+  url.value = location.origin + withBase('/preview-wechat')
+})
 </script>
 
 <template>
