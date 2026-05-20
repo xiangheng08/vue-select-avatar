@@ -1,5 +1,10 @@
 ---
 layout: page
+navbar: false
+sidebar: false
+aside: false
+outline: false
+footer: false
 ---
 
 <script setup>

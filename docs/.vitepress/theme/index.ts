@@ -27,10 +27,6 @@ export default {
       }
     })
 
-    onMounted(() => {
-      import('@xiangheng08/qrcode')
-    })
-
     return h(DefaultTheme.Layout, null, {
       // https://vitepress.dev/guide/extending-default-theme#layout-slots
     })
@@ -40,5 +36,9 @@ export default {
     app.component('ExampleHome2', ExampleHome2)
     app.component('Viewport', Viewport)
     app.component('Preview', Preview)
+
+    if (!import.meta.env.SSR) {
+      import('@xiangheng08/qrcode')
+    }
   },
 } satisfies Theme
