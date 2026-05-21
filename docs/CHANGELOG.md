@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## v3.0.0-alpha.6
+## v3.0.0-alpha.7
 
 1. `<Viewport/>` 组件新增 `border` prop，控制是否显示观察窗边框
 2. `ViewportProps.size`、`ViewportProps.width`、`ViewportProps.height` 及 `PreviewProps.size` 新增支持 `full` 关键字，设置后将自动填满容器
