@@ -25,7 +25,8 @@
     "url": "git+https://github.com/xiangheng08/vue-select-avatar"
   },
   "files": [
-    "dist"
+    "dist",
+    "index.js"
   ],
   "type": "module",
   "main": "./index.js",
@@ -47,8 +48,9 @@
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",
     "docs:preview": "vitepress preview docs",
-    "publish-npm": "npm publish --provenance --access public --registry https://registry.npmjs.com/",
-    "pub": "run-s build:lib publish-npm"
+    "publish-npm": "npm publish --access public --registry https://registry.npmjs.org/",
+    "pub": "run-s build:lib publish-npm",
+    "pack:dry": "npm pack --dry-run"
   },
   "devDependencies": {
     "@tsconfig/node24": "^24.0.4",
