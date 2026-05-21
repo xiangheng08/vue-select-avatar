@@ -89,6 +89,15 @@ export const useInit = (context: HookContext) => {
     },
   )
 
+  watch(
+    () => props.info,
+    (val) => {
+      if (val) {
+        positionInit(val)
+      }
+    },
+  )
+
   const { width, height } = resolveSize(props)
   const hasFull = width === 'full' || height === 'full'
   if (!hasFull) viewportInit()
