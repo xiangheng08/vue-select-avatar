@@ -19,7 +19,7 @@ const handleSelect = () => {
   })
 }
 
-const handleCropper = async () => {
+const handleCrop = async () => {
   try {
     const file = await viewportRef.value?.crop<File>({ format: 'file' })
     if (file) {
@@ -58,7 +58,7 @@ const formatBytes = (bytes: number, decimals = 2) => {
   <div style="width: fit-content">
     <div style="display: flex; justify-content: space-between; margin: 0.5rem 0 0.2rem">
       <button @click="handleSelect">选择图片</button>
-      <button @click="handleCropper">截取</button>
+      <button @click="handleCrop">截取</button>
     </div>
     <Viewport ref="viewportRef" grid mode="fixed-image" />
   </div>

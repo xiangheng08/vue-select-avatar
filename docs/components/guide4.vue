@@ -18,8 +18,7 @@ const size = ref(0)
 
 const handleSelect = async () => {
   try {
-    const res = await selectImage({ maxFileSize: 20 * 1024 * 1024 })
-    info.value = res
+    info.value = await selectImage({ maxFileSize: 20 * 1024 * 1024 })
   } catch (error) {
     // 忽略取消错误
     if (AvatarError.isCancel(error)) return
@@ -29,7 +28,7 @@ const handleSelect = async () => {
   }
 }
 
-const handleCropper = async () => {
+const handleCrop = async () => {
   try {
     const file = await viewportRef.value?.crop<File>({ format: 'file' })
     if (file) {
@@ -72,7 +71,7 @@ const formatBytes = (bytes: number, decimals = 2) => {
   <template v-if="info">
     <div style="width: fit-content">
       <div style="display: flex; justify-content: flex-end; margin: 0.5rem 0 0.2rem">
-        <button @click="handleCropper">截取</button>
+        <button @click="handleCrop">截取</button>
       </div>
       <Viewport ref="viewportRef" grid :info="info" />
     </div>

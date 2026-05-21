@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v3.0.0-alpha.8
+
+1. 修复 info prop 变化时没有更新视图
+
 ## v3.0.0-alpha.7
 
 1. `<Viewport/>` 组件新增 `border` prop，控制是否显示观察窗边框
